@@ -351,6 +351,7 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
       input Real h_der "derivative of Specific enthalpy";
       output ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph der_pro "Derivative";
     protected
+      ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph pro "Properties at (p, h)";
       Integer phase;
       Integer region;
       Boolean supercritical;
@@ -420,12 +421,6 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
       Real ddph_d;
       Real ddhp_t;
       Real ddhp_d;
-      Real duhp_t;
-      Real duph_t;
-      Real duph_d;
-      Real dupp;
-      Real duph;
-      Real duhh;
       Real dcp_d;
       Real rho2 "square of density";
       Real rho3 "cube of density";
@@ -482,13 +477,8 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         ddhp_d := ddhp*(ptd/pt - detPH_d/detPH);
         ddph_t := ddph*(dhtt/dht - detPH_t/detPH);
         ddph_d := ddph*(dhtd/dht - detPH_d/detPH);
-        dupp := -(2.0*cp3*vp + cp3*p*vpp - 2.0*cp*cp*vt*v - 2.0*cpcpp*vtp*v - cpcpp*vt*vp + 2.0*cp*cp*T*vt2 + 3.0*cpcpp*vt*T*vtp - 4.0*T*vtt*cp*p*vt*v + 3.0*T*T*vtt*cp*p*vt2 + cp*p*vtt/rho2 - cpt*p*vt/rho2 + 2.0*cpt*p*vt2*v*T - cpt*p*vt2*T^2)/cp3;
-        duph := -(vtp*cpcpp + cp*cp*vt - cp*p*vtt*v + 2.0*cp*p*vt*T*vtt + cpt*p*vt*v - cpt*p*vt2*T)/cp3;
-        duhh := -p*(cp*vtt - cpt*vt)/cp3;
 // calculate derivatives
         der_pro.x := 0.0;
-        der_pro.duhp := duph*p_der + duhh*h_der;
-        der_pro.duph := dupp*p_der + duph*h_der;
         der_pro.ddph := (ddph*ddph_d + dtph*ddph_t)*p_der + (ddph*ddhp_d + dtph*ddhp_t)*h_der;
         der_pro.ddhp := (ddhp*ddhp_d + dthp*ddhp_t)*h_der + (ddph*ddhp_d + dtph*ddhp_t)*p_der;
         der_pro.cp := (-(T*vtt*cp + cpt/rho - cpt*T*vt)/cp)*p_der + cpt/cp*h_der;
@@ -538,13 +528,8 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         ddhp_d := ddhp*(ptd/pt - detPH_d/detPH);
         ddph_t := ddph*(dhtt/dht - detPH_t/detPH);
         ddph_d := ddph*(dhtd/dht - detPH_d/detPH);
-        dupp := -(2.0*cp3*vp + cp3*p*vpp - 2.0*cp*cp*vt*v - 2.0*cpcpp*vtp*v - cpcpp*vt*vp + 2.0*cp*cp*T*vt2 + 3.0*cpcpp*vt*T*vtp - 4.0*T*vtt*cp*p*vt*v + 3.0*T*T*vtt*cp*p*vt2 + cp*p*vtt/rho2 - cpt*p*vt/rho2 + 2.0*cpt*p*vt2*v*T - cpt*p*vt2*T^2)/cp3;
-        duph := -(vtp*cpcpp + cp*cp*vt - cp*p*vtt*v + 2.0*cp*p*vt*T*vtt + cpt*p*vt*v - cpt*p*vt2*T)/cp3;
-        duhh := -p*(cp*vtt - cpt*vt)/cp3;
 // calculate derivatives
         der_pro.x := 0.0;
-        der_pro.duhp := duph*p_der + duhh*h_der;
-        der_pro.duph := dupp*p_der + duph*h_der;
         der_pro.ddph := (ddph*ddph_d + dtph*ddph_t)*p_der + (ddph*ddhp_d + dtph*ddhp_t)*h_der;
         der_pro.ddhp := (ddhp*ddhp_d + dthp*ddhp_t)*h_der + (ddph*ddhp_d + dtph*ddhp_t)*p_der;
         der_pro.cp := (-(T*vtt*cp + cpt/rho - cpt*T*vt)/cp)*p_der + cpt/cp*h_der;
@@ -588,13 +573,8 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         ddph_d := ddph*(dhtd/dht - detPH_d/detPH);
         dcp_d := (detPH_d - cp*pdd)/pd;
         quotient := 1/(cv*rho2*pd + T*pt2)^3;
-        dupp := -(-4.0*ptt*p*cv*rho2*pd*T*pt + 2.0*p*cvt*rho2*T*pt2*pd - 2.0*ptt*p*T*pt2*rho*pd + 3.0*p*cv^2*rho3*ptd*T*pt + 3.0*p*cv*rho*T^2*pt2*ptt - 2.0*pt*p*cv*rho3*ptd*pd + 4.0*pt2*p*cv*rho2*ptd*T - 2.0*T^2*pt2*pt3 - 4.0*pt2*cv^2*rho3*pd*T - 4.0*pt3*cv*rho2*T*pd - p*cvt*rho*T^2*pt3 + ptt*p*cv*rho3*pd^2 - 2.0*p*cv^2*rho2*rho2*ptd*pd + 2.0*p*cv*rho2*pt2*pd + 2.0*p*cv*rho*pt3*T - pt*p*cvt*rho3*pd^2 + ptd*p*rho*T*pt3 + 5.0*pt*p*cv^2*rho3*pd + 2*pt*p*cv^2*rho2*rho2*pdd + pt2*p*cv*rho3*pdd + 2.0*pt2*pt2*p*T - 2.0*cv^3*rho3*rho2*pd^2 - 2.0*pt*cv^2*rho2*rho2*pd^2 - 2.0*pt2*pt2*cv*rho*T^2 + 2.0*ptt*p*T^2*pt3 - pt3*p*rho*pd + 2.0*p*cv^3*rho2*rho2*pd + p*cv^3*rho2*rho3*pdd)*quotient/rho;
-        duph := (-2.0*ptt*p*cv*rho2*pd*T*pt + p*cvt*rho2*T*pt2*pd - 2.0*ptt*p*T*pt2*rho*pd - 2.0*pt*p*cv*rho3*ptd*pd + 2.0*pt2*p*cv*rho2*ptd*T - T^2*pt3*pt2 - 2*pt3*cv*rho2*T*pd + ptt*p*cv*rho3*pd^2 - p*cv^2*rho2*rho2*ptd*pd + 2.0*p*cv*rho2*pt2*pd - pt*p*cvt*rho3*pd^2 + ptd*p*rho*T*pt3 + 2.0*pt*p*cv^2*rho3*pd + pt*p*cv^2*rho2*rho2*pdd + pt2*p*cv*rho3*pdd + pt2*pt2*p*T - pt*cv^2*rho2*rho2*pd^2 + ptt*p*T^2*pt3 - pt3*p*rho*pd)*quotient;
-        duhh := p*(-pt3*T*ptd + 2.0*ptd*cv*rho2*pd*pt - 2.0*pt2*cv*rho*pd + pt*cvt*rho2*pd^2 - pt2*cv*rho2*pdd + 2.0*pt2*T*ptt*pd - ptt*cv*rho2*pd^2 + pt3*pd)*rho2*quotient;
 // calculate derivatives
         der_pro.x := 0.0;
-        der_pro.duhp := duph*p_der + duhh*h_der;
-        der_pro.duph := dupp*p_der + duph*h_der;
         der_pro.ddph := (ddph*ddph_d + dtph*ddph_t)*p_der + (ddph*ddhp_d + dtph*ddhp_t)*h_der;
         der_pro.ddhp := (ddhp*ddhp_d + dthp*ddhp_t)*h_der + (ddph*ddhp_d + dtph*ddhp_t)*p_der;
         der_pro.cp := (ddph*dcp_d + dtph*cpt)*p_der + (ddhp*dcp_d + dthp*cpt)*h_der;
@@ -665,13 +645,8 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         ddhp_d := ddhp*(-detPH_d);
         ddph_t := ddph*(dhtt/dht - detPH_t);
         ddph_d := ddph*(dhtd/dht - detPH_d);
-        duhp_t := (ddhp*dpT + p*ddhp_t)/(rho2);
-        duph_t := (ddph*dpT + p*ddph_t)/(rho2);
-        duph_d := ((-2.0*ddph/rho + ddph_d)*p + 1.0)/(rho2);
 // calculate derivatives
         der_pro.x := if (h_vap <> h_liq) then h_der/(h_vap - h_liq) else 0.0;
-        der_pro.duhp := (dtph*duhp_t)*p_der;
-        der_pro.duph := (ddph*duph_d + dtph*duph_t)*p_der + (dtph*duhp_t)*h_der;
         der_pro.ddph := (ddph*ddph_d + dtph*ddph_t)*p_der + (ddhp*ddph_d)*h_der;
         der_pro.ddhp := (ddhp*ddhp_d)*h_der + (ddhp*ddph_d)*p_der;
         der_pro.cp := 0.0;
@@ -722,13 +697,8 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         ddhp_d := ddhp*(ptd/pt - detPH_d/detPH);
         ddph_t := ddph*(dhtt/dht - detPH_t/detPH);
         ddph_d := ddph*(dhtd/dht - detPH_d/detPH);
-        dupp := -(2.0*cp3*vp + cp3*p*vpp - 2.0*cp*cp*vt*v - 2.0*cpcpp*vtp*v - cpcpp*vt*vp + 2.0*cp*cp*T*vt2 + 3.0*cpcpp*vt*T*vtp - 4.0*T*vtt*cp*p*vt*v + 3.0*T*T*vtt*cp*p*vt2 + cp*p*vtt/rho2 - cpt*p*vt/rho2 + 2.0*cpt*p*vt2*v*T - cpt*p*vt2*T^2)/cp3;
-        duph := -(vtp*cpcpp + cp*cp*vt - cp*p*vtt*v + 2.0*cp*p*vt*T*vtt + cpt*p*vt*v - cpt*p*vt2*T)/cp3;
-        duhh := -p*(cp*vtt - cpt*vt)/cp3;
 // calculate derivatives
         der_pro.x := 0.0;
-        der_pro.duhp := duph*p_der + duhh*h_der;
-        der_pro.duph := dupp*p_der + duph*h_der;
         der_pro.ddph := (ddph*ddph_d + dtph*ddph_t)*p_der + (ddph*ddhp_d + dtph*ddhp_t)*h_der;
         der_pro.ddhp := (ddhp*ddhp_d + dthp*ddhp_t)*h_der + (ddph*ddhp_d + dtph*ddhp_t)*p_der;
         der_pro.cp := (-(T*vtt*cp + cpt/rho - cpt*T*vt)/cp)*p_der + cpt/cp*h_der;
@@ -739,6 +709,11 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
       else
         assert(false, "Water_Ph_der: Incorrect region number");
       end if;
+// duph = -1/d + p/d^2*ddph and duhp = 1 + p/d^2*ddhp in every region (gibbsToProps_ph, helmholtzToProps_ph,
+// water_ph_r4): chain rule, with the derivatives of d, ddph and ddhp computed above
+      pro := Water_Ph(p, h, mode);
+      der_pro.duph := (der_pro.d + p_der*pro.ddph + p*der_pro.ddph)/(pro.d*pro.d) - 2*p*pro.ddph*der_pro.d/(pro.d*pro.d*pro.d);
+      der_pro.duhp := (p_der*pro.ddhp + p*der_pro.ddhp)/(pro.d*pro.d) - 2*p*pro.ddhp*der_pro.d/(pro.d*pro.d*pro.d);
       annotation(
         Window(x = 0.22, y = 0.2, width = 0.6, height = 0.6),
         Icon(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Text(extent = {{-134, 104}, {142, 44}}, textString = "%name"), Ellipse(extent = {{-100, 40}, {100, -100}}, lineColor = {255, 127, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-84, -4}, {84, -52}}, lineColor = {255, 127, 0}, textString = "fonction")}),
