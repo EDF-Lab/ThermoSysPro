@@ -452,6 +452,7 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         cp3 := cp*cp*cp;
         cpcpp := cp*cp*p;
         vp := R*T/(p*p)*g.pi*g.pi*g.gpipi;
+        cv := R*(-g.tau*g.tau*g.gtautau + ((g.gpi - g.tau*g.gpitau)*(g.gpi - g.tau*g.gpitau)/g.gpipi));
         v := 1/rho;
         vtt := R*g.pi/p*g.tau/T*g.tau*g.gpitautau;
         vtp := R*g.pi*g.pi/(p*p)*(g.gpipi - g.tau*g.gpipitau);
@@ -507,6 +508,7 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         cp3 := cp*cp*cp;
         cpcpp := cp*cp*p;
         vp := R*T/(p*p)*g.pi*g.pi*g.gpipi;
+        cv := R*(-g.tau*g.tau*g.gtautau + ((g.gpi - g.tau*g.gpitau)*(g.gpi - g.tau*g.gpitau)/g.gpipi));
         v := 1/rho;
         vtt := R*g.pi/p*g.tau/T*g.tau*g.gpitautau;
         vtp := R*g.pi*g.pi/(p*p)*(g.gpipi - g.tau*g.gpipitau);
@@ -690,6 +692,7 @@ Needs to be redone. Iterative functions don't work for Analytic Jacobian
         cp3 := cp*cp*cp;
         cpcpp := cp*cp*p;
         vp := R*T/(p*p)*g.pi*g.pi*g.gpipi;
+        cv := R*(-g.tau*g.tau*g.gtautau + ((g.gpi - g.tau*g.gpitau)*(g.gpi - g.tau*g.gpitau)/g.gpipi));
         v := 1/rho;
         vtt := R*g.pi/p*g.tau/T*g.tau*g.gpitautau;
         vtp := R*g.pi*g.pi/(p*p)*(g.gpipi - g.tau*g.gpipitau);
