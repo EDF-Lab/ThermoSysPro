@@ -26,15 +26,15 @@ protected
 algorithm
 //First derivatives
   dTp := ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT2ph_Ph(p, h);
-  dTh := ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT2ph_Ph(p, h);
+  dTh := ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT2hp_Ph(p, h);
   ddp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2ph_Ph(p, h);
-  ddh := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2ph_Ph(p, h);
+  ddh := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2hp_Ph(p, h);
   dup := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2ph_Ph(p, h);
-  duh := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2ph_Ph(p, h);
+  duh := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2hp_Ph(p, h);
   dsp := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds2ph_Ph(p, h);
-  dsh := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds2ph_Ph(p, h);
+  dsh := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds2hp_Ph(p, h);
   dcp := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp2ph_Ph(p, h);
-  dch := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp2ph_Ph(p, h);
+  dch := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp2hp_Ph(p, h);
   der_pro.T := dTp*p_der + dTh*h_der;
   der_pro.d := ddp*p_der + ddh*h_der;
   der_pro.u := dup*p_der + duh*h_der;
@@ -50,8 +50,8 @@ algorithm
   d2upp := ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u2pp_Ph(p, h);
   der_pro.ddhp := d2dhp*p_der + d2dhh*h_der;
   der_pro.ddph := d2dpp*p_der + d2dhp*h_der;
-  der_pro.duph := d2uhp*p_der + d2uhh*h_der;
-  der_pro.duhp := d2upp*p_der + d2uhp*h_der;
+  der_pro.duph := d2upp*p_der + d2uhp*h_der;
+  der_pro.duhp := d2uhp*p_der + d2uhh*h_der;
   annotation(
     Documentation(info = "## Copyright © EDF 2002 - 2025
 
