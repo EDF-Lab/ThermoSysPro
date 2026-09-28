@@ -1,6 +1,6 @@
 within ThermoSysPro.Properties.Fluid;
 
-function derDynamicViscosity_derP_derh "Dynamic Viscosity computation for all fluids (inputs: P, h, fluid)"
+function derDynamicViscosity_derP_derh "der(Dynamic Viscosity) computation for all fluids (inputs: P, h, fluid, der(P), der(h))"
   input Units.SI.AbsolutePressure P "Pressure (Pa)";
   input Units.SI.SpecificEnthalpy h "Specific enthalpy";
   input Integer fluid "<html>Fluid number: <br>1 - Water/Steam <br>2 - C3H3F5 <br>3 - FlueGases <br>4 - MoltenSalt <br>5 - Oil <br>6 - DryAirIdealGas <br>7 - WaterSteamSimple </html>";
@@ -9,81 +9,41 @@ function derDynamicViscosity_derP_derh "Dynamic Viscosity computation for all fl
   input Real Xh2o "H2O mass fraction";
   input Real Xo2 "O2 mass fraction";
   input Real Xso2 "SO2 mass fraction";
-  input Real der_rho "Density time derivative";
-  input Real der_T "Temperature time derivative";
-  input Real der_Xco2 = 0 "CO2 mass fraction";
-  input Real der_Xh2o = 0 "H2O mass fraction";
-  input Real der_Xo2 = 0 "O2 mass fraction";
-  input Real der_Xso2 = 0 "SO2 mass fraction";
+  input Real der_P "Pressure time derivative (Pa/s)";
+  input Real der_h "Specific Enthalpy time derivative (J/(kg*s))";
+  input Real der_Xco2 = 0 "CO2 mass fraction time derivative";
+  input Real der_Xh2o = 0 "H2O mass fraction time derivative";
+  input Real der_Xo2 = 0 "O2 mass fraction time derivative";
+  input Real der_Xso2 = 0 "SO2 mass fraction time derivative";
   output Real der_mu "Dynamic Viscosity time derivative";
 protected
-  constant Real Viscosity_c0 = 0.07551475951333098;
-  constant Real Viscosity_c1 = -0.00027760397992950003;
-  constant Real Viscosity_c2 = 0.00000034888693;
-  constant Real Viscosity_c3 = -0.00000000014739999;
-  Units.SI.Duration dt = 1;
-  Units.SI.AbsolutePressure delta_P = 0.001*P;
-  Units.SI.SpecificEnthalpy delta_h = 0.001*h;
-protected
-  ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph pro annotation(
-    Placement(transformation(extent = {{-80, 40}, {-40, 80}}, rotation = 0)));
+  ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph pro "IF97 properties";
+  ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph der_pro "Time derivative of the IF97 properties";
+  Units.SI.Density drho "Density step for finite differences";
+  Units.SI.TemperatureDifference dT "Temperature step for finite differences";
+  Units.SI.AbsolutePressure dP = 1e-6*max(abs(P), 1e5) "Pressure step for finite differences";
+  Units.SI.SpecificEnthalpy dh = 1e-6*max(abs(h), 1e5) "Specific enthalpy step for finite differences";
+  Real eps "Step along the mass fraction derivatives for finite differences";
 algorithm
-// Water/Steam  /// FONCTIONNE EN DIPHASIQUE ???
+  // Each branch differentiates the function called by the same branch of DynamicViscosity_Ph
   if fluid == 1 then
-//der_mu := 0.0;
-    der_mu := (ThermoSysPro.Properties.Fluid.DynamicViscosity_Ph(P = P + delta_P, h = h + delta_h, fluid = fluid, mode = mode, Xco2 = Xco2, Xh2o = Xh2o, Xo2 = Xo2, Xso2 = Xso2) - ThermoSysPro.Properties.Fluid.DynamicViscosity_Ph(P = P - delta_P, h = h - delta_h, fluid = fluid, mode = mode, Xco2 = Xco2, Xh2o = Xh2o, Xo2 = Xo2, Xso2 = Xso2))/dt;
-// C3H3F5
-// elseif fluid==2 then
-//   mu := ThermoSysPro.Properties.C3H3F5.DynamicViscosity_Ph__NonFonctionnel(P=
-//     P, h=h);
-// FlueGas
-  elseif fluid == 3 then
-// if fluid==3 then
-    assert(Xco2 + Xh2o + Xo2 + Xso2 > 0, "Wrong mass fraction definition");
-/// Commentaire ajouté (si fluid==2, vérifie que les fractions massiques sont bien fournies en Input)
-//   mu := ThermoSysPro.Properties.FlueGases.FlueGases_mu(
-//     PMF=P,
-//     TMF=ThermoSysPro.Properties.FlueGases.FlueGases_T(
-//       PMF=P,
-//       HMF=h,
-//       Xco2=Xco2,
-//       Xh2o=Xh2o,
-//       Xo2=Xo2,
-//       Xso2=Xso2),
-//     Xco2=Xco2,
-//     Xh2o=Xh2o,
-//     Xo2=Xo2,
-//     Xso2=Xso2);
-// MoltenSalt
-// elseif fluid==4 then
-//   mu := ThermoSysPro.Properties.MoltenSalt.DynamicViscosity_T(T=
-//     ThermoSysPro.Properties.MoltenSalt.Temperature_h(h=h));
-// Oil
-//elseif fluid==5 then
-  elseif fluid == 4 then
-//der_mu := Viscosity_c1*ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h=h,der_h=der_h) + 2*Viscosity_c2*ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_h(h=h)*ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h=h,der_h=der_h) + 3*Viscosity_c3*(ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_h(h=h))^2*ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h=h,der_h=der_h);
-/*    der_mu := ThermoSysPro.Properties.MoltenSalt.DynamicViscosity_dert(
-      temp=ThermoSysPro.Properties.MoltenSalt.Temperature_h(h=h),
-      der_temp=ThermoSysPro.Properties.MoltenSalt.Temperature_derh(h=h,der_h=der_h));
-*/
+    // mu = mu(rho(P, h), T(P, h)): chain rule with the analytic derivatives of Water_Ph
+    pro := ThermoSysPro.Properties.WaterSteam.IF97.Water_Ph(P, h, mode);
+    der_pro := ThermoSysPro.Properties.WaterSteam.IF97.Water_Ph_der(p = P, h = h, mode = mode, p_der = der_P, h_der = der_h);
+    drho := 1e-6*pro.d;
+    dT := 1e-6*pro.T;
+    der_mu := (ThermoSysPro.Properties.WaterSteam.IF97.DynamicViscosity_rhoT(rho = pro.d + drho, T = pro.T) - ThermoSysPro.Properties.WaterSteam.IF97.DynamicViscosity_rhoT(rho = pro.d - drho, T = pro.T))/(2*drho)*der_pro.d + (ThermoSysPro.Properties.WaterSteam.IF97.DynamicViscosity_rhoT(rho = pro.d, T = pro.T + dT) - ThermoSysPro.Properties.WaterSteam.IF97.DynamicViscosity_rhoT(rho = pro.d, T = pro.T - dT))/(2*dT)*der_pro.T;
   elseif fluid == 5 then
-/*    der_mu := ThermoSysPro.Properties.Oil_TherminolVP1.DynamicViscosity_dert(
-      temp=ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_h(h=h),
-      der_temp=ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h=h,der_h=der_h));
-*/
-// Dry Air Ideal Gas
-// elseif fluid==6 then
-//   mu := ThermoSysPro.Properties.DryAirIdealGas.DynamicViscosity_Trho(
-//     T=ThermoSysPro.Properties.DryAirIdealGas.Temperature_h(h=h),
-//     rho=ThermoSysPro.Properties.DryAirIdealGas.Density_PT(
-//       P=P, T=ThermoSysPro.Properties.DryAirIdealGas.Temperature_h(h=h)));
-  elseif fluid == 7 then
-//der_mu := 0.0001;
-//
-//LogVariable(der_mu);
+    der_mu := ThermoSysPro.Properties.Oil_TherminolVP1.DynamicViscosity_derT(temp = ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_h(h = h), der_temp = ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h = h, der_h = der_h));
+  elseif fluid >= 2 and fluid <= 7 then
+    // No analytic derivative available: central finite differences of the partial derivatives
+    der_mu := (DynamicViscosity_Ph(P + dP, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2) - DynamicViscosity_Ph(P - dP, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2))/(2*dP)*der_P + (DynamicViscosity_Ph(P, h + dh, fluid, mode, Xco2, Xh2o, Xo2, Xso2) - DynamicViscosity_Ph(P, h - dh, fluid, mode, Xco2, Xh2o, Xo2, Xso2))/(2*dh)*der_h;
+    if fluid == 3 and max({abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)}) > 0 then
+      eps := 1e-6/max({abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)});
+      der_mu := der_mu + (DynamicViscosity_Ph(P, h, fluid, mode, Xco2 + eps*der_Xco2, Xh2o + eps*der_Xh2o, Xo2 + eps*der_Xo2, Xso2 + eps*der_Xso2) - DynamicViscosity_Ph(P, h, fluid, mode, Xco2 - eps*der_Xco2, Xh2o - eps*der_Xh2o, Xo2 - eps*der_Xo2, Xso2 - eps*der_Xso2))/(2*eps);
+    end if;
   else
-    assert(false, "incorrect fluid number");
-///
+    assert(false, "derDynamicViscosity_derP_derh: incorrect fluid number");
   end if;
   annotation(
     Documentation(info = "## Copyright © EDF 2002 - 2025
