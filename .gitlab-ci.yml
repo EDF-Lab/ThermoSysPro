@@ -88,6 +88,7 @@ test-job-dymola-internal:
     #- git clone https://token:$modelicaTests_token@gitlab.pam-retd.fr/thermosysproandco/modelicatests.git
     - git clone https://token:$modelicaTests_mirror_token@gitlab.pleiade.edf.fr/Phy13Models/pythontools/modelicatests_mirror.git
     - cd modelicatests*
+    - python3 -m pip install --upgrade pip
     - pip install .
     - cd tests
     - cp ../../.test/*.json ./

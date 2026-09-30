@@ -4,9 +4,9 @@ model TestDynamicCentrifugalPump2
   import ThermoSysPro;
   ThermoSysPro.InstrumentationAndControl.Blocks.Logique.Pulse Pulse1(width = 200, period = 400) annotation(
     Placement(transformation(extent = {{-60, -60}, {-40, -40}}, rotation = 0)));
-  ThermoSysPro.ElectroMechanics.Machines.SynchronousMotor Motor1(Im(start = 1800)) annotation(
+  ThermoSysPro.ElectroMechanics.Machines.SynchronousMotor Motor1(Im(start = 1754.2614), w(start = 146.60089)) annotation(
     Placement(transformation(extent = {{-40, -80}, {-20, -60}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.Machines.DynamicCentrifugalPump DynamicCentrifugalPump1(continuous_flow_reversal = true, J = 10, Cf0 = 1000, Ch(start = 300)) annotation(
+  ThermoSysPro.WaterSteam.Machines.DynamicCentrifugalPump DynamicCentrifugalPump1(continuous_flow_reversal = true, J = 10, Cf0 = 1000, Ch(start = 288.2063), w(start = 146.60089), Q(start = 655.73639), Qv(start = 0.65741497), C1(P(start = 296709.84), h(start = 100032.22)), C2(P(start = 343889.81), h(start = 100032.22))) annotation(
     Placement(transformation(extent = {{40, -40}, {20, -20}}, rotation = 0)));
   ThermoSysPro.WaterSteam.Volumes.Tank Tank(ze2 = 10, zs2 = 10) annotation(
     Placement(transformation(extent = {{20, 20}, {40, 40}}, rotation = 0)));

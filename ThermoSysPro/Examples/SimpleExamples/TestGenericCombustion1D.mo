@@ -2,6 +2,7 @@ within ThermoSysPro.Examples.SimpleExamples;
 
 model TestGenericCombustion1D
   parameter Integer NCEL = 7;
+  parameter Units.SI.AbsolutePressure sinkWaterSteamP0(fixed = false, start = 19621600) "Outlet pressure computed by initialization";
   Combustion.CombustionChambers.GenericCombustion1D genericCombustionCCS(NCEL = 7, Qm(fixed = false), Qsf(fixed = false), kcham(fixed = true) = 0.1, Acham = 275, Xbf = 0, ImbCV = 0.05, EPSPAR = 0.7, Kec = 8.8, SM = {639.92, 198.58, 466.48, 466.48, 466.48, 358.56, 358.56}, ImbBF = 0.0, Psf(start = 113275)) annotation(
     Placement(transformation(extent = {{-62, -56}, {62, 72}}, rotation = 0)));
   Combustion.BoundaryConditions.FuelSourcePQ fuelSourcePQ(Xn = 0.0208, Xashes = 0.136, Cp = 1200, rho = 1100, LHV = 29245e3, Xc = 0.719, Xh = 0.0414, Xo = 0.086, Xs = 0.0044, Vol = 0.286, Q0 = 57.20, T0 = 358.15, Hum = 0.08) annotation(
@@ -12,11 +13,11 @@ model TestGenericCombustion1D
     Placement(transformation(extent = {{0, 70}, {44, 112}}, rotation = 0)));
   WaterSteam.BoundaryConditions.SourcePQ SourcePQ_Water(Q0 = 0, P0 = 100000) annotation(
     Placement(transformation(extent = {{-107, 23}, {-71, 57}}, rotation = 0)));
-  WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe PipeWaterSteam(Ns = 7, z2 = 56, rugosrel = 5e-5, ntubes = 403, L = 58, D = 0.0327, C2(Q(fixed = false, start = 486.69), P(fixed = false, start = 1.96318e+07, displayUnit = "Pa")), dpfCorr = 3.5) annotation(
+  WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe PipeWaterSteam(Ns = 7, z2 = 56, rugosrel = 5e-5, ntubes = 403, L = 58, D = 0.0327, C2(Q(fixed = false, start = 486.69), P(fixed = false, start = 1.96318e+07, displayUnit = "Pa")), dpfCorr = 3.5, Q(start = {486.69, 486.69, 486.69, 486.69, 486.69, 486.69, 486.69, 486.69}), P(start = {20112000, 20050000, 19990000, 19930000, 19870000, 19810000, 19750000, 19690000, 19621600}), h(start = {1292000, 1440000, 1590000, 1740000, 1890000, 2040000, 2190000, 2340000, 2500000})) annotation(
     Placement(transformation(origin = {91, 8}, extent = {{49, 16}, {-49, -16}}, rotation = 270)));
   Thermal.HeatTransfer.HeatExchangerWall paroiEcrans(Ns = 7, lambda = 40, steady_state = true, ntubes = 403, L = 58, D = 0.0327, e = 0.001) annotation(
     Placement(transformation(origin = {73, 7.5}, extent = {{51.5, -15}, {-51.5, 15}}, rotation = 270)));
-  WaterSteam.BoundaryConditions.SinkP sinkWaterSteam2(option_temperature = 2, Q(start = 486.69, fixed = true), h0 = 2.5e+06, mode = 0, P0(fixed = false) = 19621600) annotation(
+  WaterSteam.BoundaryConditions.SinkP sinkWaterSteam2(option_temperature = 2, Q(start = 486.69, fixed = true), h0 = 2.5e+06, mode = 0, P0 = sinkWaterSteamP0) annotation(
     Placement(transformation(origin = {90, 90.5}, extent = {{14.5, -15}, {-14.5, 15}}, rotation = 270)));
   WaterSteam.BoundaryConditions.SourceP sourceEcrans(h0 = 1.292e+06, option_temperature = 2, mode = 0, P0 = 20112000) annotation(
     Placement(transformation(origin = {91, -81}, extent = {{15, -15}, {-15, 15}}, rotation = 270)));

@@ -1,7 +1,9 @@
 within ThermoSysPro.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestDynamicTwoPhaseFlowPipe
-  WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe1(L = 10, D = 0.03, dpfCorr(fixed = false, start = 0.23963336533422905) = 1, P(start = {2000000.0, 1999571.707027408, 1999140.94021676, 1998707.6248918818, 1998271.6837222823, 1997833.0364982954, 1997391.599890757, 1996715.8221090273, 1995640.018272837, 1994163.014585635, 1992283.4952231126, 1990000.0})) annotation(
+  parameter Real dpfCorr1(fixed = false, start = 0.23963336533422905)
+    "Friction pressure loss corrective term for dynamicTwoPhaseFlowPipe1";
+  WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe1(L = 10, D = 0.03, dpfCorr = dpfCorr1, P(start = {2000000.0, 1999571.707027408, 1999140.94021676, 1998707.6248918818, 1998271.6837222823, 1997833.0364982954, 1997391.599890757, 1996715.8221090273, 1995640.018272837, 1994163.014585635, 1992283.4952231126, 1990000.0}), h(start = {800000, 802000, 804000, 806000, 808000, 810000, 812000, 814000, 816000, 818000, 820000, 2000000})) annotation(
     Placement(transformation(extent = {{-40, -48}, {40, 10}}, rotation = 0)));
   WaterSteam.BoundaryConditions.SourceP sourceP1(C(Q(fixed = true, start = 1)), option_temperature = 2, mode = 0, h0 = 800e3, P0 = 2000000) annotation(
     Placement(transformation(extent = {{-90, -28}, {-70, -8}}, rotation = 0)));

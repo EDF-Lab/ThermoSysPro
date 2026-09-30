@@ -5,11 +5,11 @@ model TestJunctions3
     Placement(transformation(extent = {{-104, 0}, {-84, 20}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP1(P0 = 2e5, Q(start = 323.48244470861454)) annotation(
     Placement(transformation(extent = {{-104, -60}, {-84, -40}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.ControlValve valve1(C1(h_vol(start = 71016.12237181116)), C2(h_vol(start = 70977.89042837733)), Pm(start = 120690.8728732298)) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.ControlValve valve1(continuous_flow_reversal = true, C1(h_vol(start = 71016.12237181116)), C2(h_vol(start = 70977.89042837733)), Pm(start = 120690.8728732298)) annotation(
     Placement(transformation(extent = {{-10, 6}, {10, 26}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.ControlValve valve2(C1(h_vol(start = 70921.01678153824)), Pm(start = 118970.64778985853)) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.ControlValve valve2(continuous_flow_reversal = true, C1(h_vol(start = 70921.01678153824)), Pm(start = 118970.64778985853)) annotation(
     Placement(transformation(extent = {{-10, -54}, {10, -34}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.ControlValve valve3(Q(start = 804.6933031325926), Pm(start = 108776.21727782265)) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.ControlValve valve3(continuous_flow_reversal = true, Q(start = 804.6933031325926), Pm(start = 108776.21727782265)) annotation(
     Placement(transformation(extent = {{50, -24}, {70, -4}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SinkP puitsP2 annotation(
     Placement(transformation(extent = {{82, -30}, {102, -10}}, rotation = 0)));
@@ -19,9 +19,9 @@ model TestJunctions3
     Placement(transformation(extent = {{-30, 30}, {-10, 50}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Rampe rampe4(Initialvalue = 1, Starttime = 1, Finalvalue = 0.001) annotation(
     Placement(transformation(extent = {{-30, -30}, {-10, -10}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.LumpedStraightPipe pipe1 annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.LumpedStraightPipe pipe1(continuous_flow_reversal = true) annotation(
     Placement(transformation(extent = {{-80, 0}, {-60, 20}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.LumpedStraightPipe pipe2 annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.LumpedStraightPipe pipe2(continuous_flow_reversal = true) annotation(
     Placement(transformation(extent = {{-80, -60}, {-60, -40}}, rotation = 0)));
   ThermoSysPro.WaterSteam.Junctions.Mixer8 staticVolume annotation(
     Placement(transformation(extent = {{-40, 0}, {-20, 20}}, rotation = 0)));

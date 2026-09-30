@@ -9,25 +9,25 @@ model TestFan_Pin
     Placement(transformation(extent = {{-68, 50}, {-48, 70}}, rotation = 0)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSource heatSource(option_temperature = 2, W0 = {1e4}) annotation(
     Placement(transformation(extent = {{-48, 90}, {-28, 110}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases(Q(fixed = false, start = 10), K = 10, rho(start = 1.473613481083164)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases(Q(fixed = false, start = 10), K = 10, rho(start = 1.473613481083164), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{12, 50}, {32, 70}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases1(Q(fixed = false, start = 11), K = 0.01, rho(start = 1.4979229608974243)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases1(Q(fixed = false, start = 11), K = 0.01, rho(start = 1.4979229608974243), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{-108, 50}, {-88, 70}}, rotation = 0)));
-  ThermoSysPro.FlueGases.Machines.StaticFan staticFan(VRotn = 2700, rm = 1, a2 = 0, b1 = -1.315, b2 = 2.4593, VRot = 2700, a1 = -263.145, a3 = 500, Qv(start = 1.3566066051273442), C2(T(start = 305.11568847661977)), T(start = 305.0163869268126), rho(start = 1.4742671713265922)) annotation(
+  ThermoSysPro.FlueGases.Machines.StaticFan staticFan(VRotn = 2700, rm = 1, a2 = 0, b1 = -1.315, b2 = 2.4593, VRot = 2700, a1 = -263.145, a3 = 500, Qv(start = 1.3566066051273442), C2(T(start = 305.11568847661977)), T(start = 305.0163869268126), rho(start = 1.4742671713265922), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{52, 50}, {72, 70}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.CheckValve singularPressureLossFlueGases2(Q(fixed = false, start = 10), touvert(start = true)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.CheckValve singularPressureLossFlueGases2(Q(fixed = false, start = 10), touvert(start = true), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{92, 50}, {112, 70}}, rotation = 0)));
   FlueGases.Volumes.VolumeCTh dynamicExchanger1(T(start = 304.91708485822744), Xco2(start = 1.0708121131984948E-29), Xh2o(start = 0.0059999999999999715), Xo2(start = 0.23), Xso2(start = 2.580512329611796E-16)) annotation(
     Placement(transformation(extent = {{-68, -70}, {-48, -50}}, rotation = 0)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSource heatSource1(option_temperature = 2, W0 = {1e4}) annotation(
     Placement(transformation(extent = {{-48, -90}, {-28, -110}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases3(Q(fixed = false, start = 10), K = 10, rho(start = 1.4736134810831638)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases3(Q(fixed = false, start = 10), K = 10, rho(start = 1.4736134810831638), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{12, -70}, {32, -50}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases4(Q(fixed = false, start = 11), K = 0.01, rho(start = 1.4979229608974243)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases4(Q(fixed = false, start = 11), K = 0.01, rho(start = 1.4979229608974243), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{-108, -70}, {-88, -50}}, rotation = 0)));
-  ThermoSysPro.FlueGases.Machines.StaticFan staticFan1(VRotn = 2700, rm = 1, b2 = 2.4593, b1 = -1.315, VRot = 2700, a1 = -263.145, a2 = 0, a3 = 500, Qv(start = 1.356606605127344), C2(T(start = 305.1156884766198)), T(start = 305.01638692681263), rho(start = 1.4742671713265918)) annotation(
+  ThermoSysPro.FlueGases.Machines.StaticFan staticFan1(VRotn = 2700, rm = 1, b2 = 2.4593, b1 = -1.315, VRot = 2700, a1 = -263.145, a2 = 0, a3 = 500, Qv(start = 1.356606605127344), C2(T(start = 305.1156884766198)), T(start = 305.01638692681263), rho(start = 1.4742671713265918), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{52, -70}, {72, -50}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.CheckValve singularPressureLossFlueGases5(Q(fixed = false, start = 10), touvert(start = true)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.CheckValve singularPressureLossFlueGases5(Q(fixed = false, start = 10), touvert(start = true), p_rho = 1.5) annotation(
     Placement(transformation(extent = {{92, -70}, {112, -50}}, rotation = 0)));
   ThermoSysPro.FlueGases.Junctions.Mixer2 mixerFlueGases2_1 annotation(
     Placement(transformation(extent = {{132, -10}, {152, 10}}, rotation = 0)));

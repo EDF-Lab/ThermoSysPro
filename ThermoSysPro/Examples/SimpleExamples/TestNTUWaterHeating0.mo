@@ -7,17 +7,17 @@ model TestNTUWaterHeating0
     Placement(transformation(extent = {{152, -10}, {172, 10}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP(option_temperature = 2, mode = 0, P0 = 27.e5, h0 = 2.6e6) annotation(
     Placement(transformation(extent = {{-182, 88}, {-162, 108}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss2(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss2(K = 1e-4, h(start = 872000), C2(Q(start = 1780), P(start = 80e5), h_vol(start = 872000), h(start = 872000))) annotation(
     Placement(transformation(extent = {{-106, -10}, {-86, 10}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss3(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss3(K = 1e-4, Q(start = 112.2867), h(start = 2600e3)) annotation(
     Placement(transformation(extent = {{-106, 88}, {-86, 108}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.Sink Puit_condenseur1 annotation(
     Placement(transformation(extent = {{152, -106}, {172, -86}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss4(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss4(K = 1e-4, h(start = 980281.1), C1(Q(start = 1780), P(start = 7618062.5), h_vol(start = 980281.1), h(start = 980281.1))) annotation(
     Placement(transformation(extent = {{92, -10}, {112, 10}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss5(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss5(K = 1e-4, h(start = 883498.1), C1(Q(start = 112.2867), P(start = 27e5), h_vol(start = 883498.1), h(start = 883498.1))) annotation(
     Placement(transformation(extent = {{34, -106}, {54, -86}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.HeatExchangers.NTUWaterHeating nTUWaterHeating(lambdaE = 102.5, SCondDes = 6314, KCond = 5024, SPurge = 656, KPurge = 1767, HeiF(start = 900000), HDesF(start = 900000), Hep(start = 500000), Ee(h_vol(start = 880000), Q(start = 1800), h(start = 880000), P(start = 80e5)), Ev(h_vol(start = 3500000), P(start = 27e5)), Ep(Q(start = 10)), Se(P(start = 80e5))) annotation(
+  ThermoSysPro.WaterSteam.HeatExchangers.NTUWaterHeating nTUWaterHeating(lambdaE = 102.5, SCondDes = 6314, KCond = 5024, SPurge = 656, KPurge = 1767, P(start = 27e5), h(start = 883498.1), SDes(start = 1e-9), HeiF(start = 878165.8), HDesF(start = 980281.1), Hep(start = 981240.8), Ee(P(start = 80e5), Q(start = 1780), h(start = 872000), h_vol(start = 872000)), Ev(P(start = 27e5), Q(start = 112.2867), h(start = 2600e3), h_vol(start = 883498.1)), Ep(P(start = 1e5), Q(start = 1e-6), h(start = 100000), h_vol(start = 883498.1)), Se(P(start = 7618062.5), Q(start = 1780), h(start = 980281.1), h_vol(start = 980281.1)), Sp(Q(start = 112.2867), h(start = 883498.1), h_vol(start = 883498.1))) annotation(
     Placement(transformation(extent = {{-34, -42}, {44, 42}}, rotation = 0)));
 equation
   connect(Source_condenseur.C, singularPressureLoss2.C1) annotation(

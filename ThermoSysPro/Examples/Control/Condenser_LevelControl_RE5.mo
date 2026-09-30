@@ -1,10 +1,6 @@
 within ThermoSysPro.Examples.Control;
 
 model Condenser_LevelControl_RE5 "Condenser level control"
-  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal MesureDebitVapeur annotation(
-    Placement(transformation(extent = {{-109, -94}, {-99, -84}}, rotation = 0)));
-  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal MesureDebitEau annotation(
-    Placement(transformation(extent = {{-110.5, -34.5}, {-100.5, -24.5}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Connectors.InputReal MesureNiveauEau annotation(
     Placement(transformation(extent = {{-110, 85}, {-100, 95}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Connectors.InputReal ConsigneNiveauEau annotation(
@@ -37,7 +33,7 @@ equation
   connect(add.y, pIsat1.u) annotation(
     Line(points = {{89.25, 78}, {93, 78}, {93, -66}, {-52, -66}}));
   annotation(
-    Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {1, 1}, initialScale = 0.1), graphics = {Text(extent = {{-97, 99}, {-59, 91}}, lineColor = {127, 0, 0}, textString = "Niveau ballon"), Text(extent = {{-99, 58}, {-53, 26}}, lineColor = {127, 0, 0}, textString = "Consigne Niveau"), Text(extent = {{-103, -21}, {-65, -29}}, lineColor = {127, 0, 0}, textString = "Debit Eau"), Text(extent = {{-99, -92}, {-61, -100}}, lineColor = {127, 0, 0}, textString = "Debit Vapeur"), Text(extent = {{64, -92}, {102, -100}}, lineColor = {127, 0, 0}, textString = "Ouv Vanne")}),
+    Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {1, 1}, initialScale = 0.1), graphics = {Text(textColor = {127, 0, 0}, extent = {{-97, 99}, {-59, 91}}, textString = "Niveau ballon"), Text(textColor = {127, 0, 0}, extent = {{-99, 58}, {-53, 26}}, textString = "Consigne Niveau"), Text(textColor = {127, 0, 0}, extent = {{64, -92}, {102, -100}}, textString = "Ouv Vanne")}),
     Icon(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {1, 1}, initialScale = 0.1), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}), Rectangle(extent = {{-80, 81}, {80, -80}}, lineColor = {0, 0, 255}, fillColor = {255, 255, 170}, fillPattern = FillPattern.Solid), Text(extent = {{-58, 62}, {58, -1}}, lineColor = {0, 0, 255}, fillColor = {255, 255, 170}, fillPattern = FillPattern.Solid, textString = "Regulation
  Niveau "), Text(extent = {{-33, -23}, {33, -61}}, lineColor = {0, 0, 255}, fillColor = {255, 255, 170}, fillPattern = FillPattern.Solid, textString = "Ballon")}),
     Documentation(info = "## Copyright © EDF 2002 - 2025

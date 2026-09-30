@@ -1,7 +1,9 @@
 within ThermoSysPro.Examples.SimpleExamples;
 
 model TestFlueGasesVolumes1
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases1(Q(start = 8311.592762050328), rho(start = 1.5532126714414567)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases1(
+    p_rho(displayUnit="kg/m3") = 1.5,                                                       Q(start = 8311.592762050328),
+    rho(start=1.5532126714415))                                                                                                                            annotation(
     Placement(transformation(extent = {{-60, -60}, {-40, -40}}, rotation = 0)));
   ThermoSysPro.FlueGases.BoundaryConditions.SourceP sourceFlueGasesP annotation(
     Placement(transformation(extent = {{-100, -60}, {-80, -40}}, rotation = 0)));
@@ -9,21 +11,26 @@ model TestFlueGasesVolumes1
     Placement(transformation(extent = {{60, -60}, {80, -40}}, rotation = 0)));
   ThermoSysPro.FlueGases.Volumes.VolumeATh volumeFlueGasesATh(Ce2(Q(start = 7434.114566895907), T(start = 399.99999999999994), Xco2(start = 0.1), Xo2(start = 0.22), Xso2(start = -2.4077935272517807E-34)), Cs2(Q(start = 7872.8536644731175))) annotation(
     Placement(transformation(extent = {{-20, -60}, {0, -40}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases2 annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases2(p_rho(displayUnit="kg/m3") = 1.5)
+                                                                                            annotation(
     Placement(transformation(extent = {{20, -60}, {40, -40}}, rotation = 0)));
   ThermoSysPro.FlueGases.BoundaryConditions.SinkP sinkFlueGasesP1 annotation(
     Placement(transformation(extent = {{60, -100}, {80, -80}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases4 annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases4(p_rho(displayUnit="kg/m3") = 1.5)
+                                                                                            annotation(
     Placement(transformation(extent = {{20, -100}, {40, -80}}, rotation = 0)));
   ThermoSysPro.FlueGases.Volumes.VolumeCTh volumeFlueGasesCTh(Ce3(Q(start = 3717.0572834479535))) annotation(
     Placement(transformation(origin = {-10, 30}, extent = {{-10, -10}, {10, 10}}, rotation = 270)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases3(rho(start = 1.517960245237922)) annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases3(p_rho(displayUnit="kg/m3") = 1.5, rho(start=1.5179602452379))
+                                                                                                                            annotation(
     Placement(transformation(origin = {-10, -10}, extent = {{10, -10}, {-10, 10}}, rotation = 90)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases5 annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases5(p_rho(displayUnit="kg/m3") = 1.5)
+                                                                                            annotation(
     Placement(transformation(extent = {{-60, 20}, {-40, 40}}, rotation = 0)));
   ThermoSysPro.FlueGases.BoundaryConditions.SourceP sourceFlueGasesP1 annotation(
     Placement(transformation(extent = {{-100, 20}, {-80, 40}}, rotation = 0)));
-  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases6 annotation(
+  ThermoSysPro.FlueGases.PressureLosses.SingularPressureLoss singularPressureLossFlueGases6(p_rho(displayUnit="kg/m3") = 1.5)
+                                                                                            annotation(
     Placement(transformation(extent = {{-60, 60}, {-40, 80}}, rotation = 0)));
   ThermoSysPro.FlueGases.BoundaryConditions.SourceP sourceFlueGasesP2 annotation(
     Placement(transformation(extent = {{-100, 60}, {-80, 80}}, rotation = 0)));
