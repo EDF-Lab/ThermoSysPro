@@ -1,4 +1,4 @@
-within ThermoSysPro.NuclearCore;
+within ThermoSysPro.NuclearCore.Modules;
 block FuelProperties "Nuclear Fuel Material Properties"
   input ThermoSysPro.Units.SI.Temperature T "Fuel Temperature";
   parameter Real porosity=0.05 "Fuel porosity";

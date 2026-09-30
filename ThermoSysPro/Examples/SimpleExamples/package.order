@@ -103,3 +103,4 @@ TestVolumeATh
 TestVolume_SteamCavitiesPipeValve
 TestHysteresis
 TestWirelessSensor
+Test_Core_ELOOP_free

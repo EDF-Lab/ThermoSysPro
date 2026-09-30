@@ -1,6 +1,3 @@
-Xenon
-FuelThermalPower
-ReactivityFeedbacks
-DecayHeat
-NeutronKinetics
-FuelProperties
+Core
+Modules
+Interfaces

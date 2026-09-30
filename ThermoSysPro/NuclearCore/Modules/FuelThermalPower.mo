@@ -1,4 +1,4 @@
-within ThermoSysPro.NuclearCore;
+within ThermoSysPro.NuclearCore.Modules;
 model FuelThermalPower "Meshed model that describes the dynamic of the conduction of heat generated 
   by fission in a fuel rod."
 
@@ -103,8 +103,6 @@ equation
   Wcond[:,1] = zeros(Nz);  //Null thermal conduction power in the center
   Wcond[:,end] = heat_coeff_gap*Sseg_cladi*(Tout - Tg); //Convection power to the clad
 
-
-
   // Extrapolation of limit point (change in conductivities could be taken into account)
   Tcenter = T[:,1]*1.5 - T[:,2]*0.5;
   Tout = T[:,end]*1.5 - T[:,Nr-1]*0.5;
@@ -127,7 +125,6 @@ equation
   Teff = 0.444*Tcenter + 0.556*Tout;
   // Mean effective temperature, weighted by thermal power axial distribution
   Teffg = zWt_norm * Teff;
-
 
   annotation (Diagram(
       coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}),
@@ -161,28 +158,75 @@ equation
           textColor={0,0,0},
           textString=
         "%name")}),
-    Documentation(info="# Fuel Heat Transfer1
+    Documentation(info="# Fuel thermal model
 
-This module resolve the heat transfer equation in the fuel rod, based on the fuel properties, *cp* and \"k\",
- computed in [FuelProperties](modelica://ThermoSysPro.NuclearCore.FuelProperties).
+This module resolve the heat transfer equation in the fuel rod, based on the fuel properties, \\\\( c_p \\\\) and  \\\\( k \\\\),
+ computed in [FuelProperties](modelica://ThermoSysPro.NuclearCore.Modules.FuelProperties).
 
-## Heat Transfer Resolution
+## Nomenclature
 
-The Finite Volumes approach is used, leading to the following equation for each node (axial thermal conduction is neglected):
+| Symbol | Description | Unit | Definition | Modelica name |
+|:------:|-------------|:----:|------------|--------------|
+| \\\\( \\varepsilon_f \\\\) | Fuel porosity | - | Volume fraction of voids in the fuel pellet | `fuel_porosity` |
+| \\\\( O/M \\\\) | Oxygen-to-metal ratio | - | Stoichiometric ratio of oxygen to heavy metal atoms | `oxy_on_metal` |
+| \\\\( \\rho_{UO_2} \\\\) | UO₂ density | \\\\( \\mathrm{kg/m^{3}} \\\\) | Uranium dioxide theoretical density | `rho_uo2` |
+| \\\\( \\rho_{PuO_2} \\\\) | PuO₂ density | \\\\( \\mathrm{kg/m^{3}} \\\\) | Plutonium dioxide theoretical density | `rho_puo2` |
+| \\\\( x_{Pu} \\\\) | PuO₂ mass fraction | - | Mass fraction of plutonium oxide in MOX fuel | `pu_mFraction` |
+| \\\\( \\rho \\\\) | Fuel density | \\\\( \\mathrm{kg/m^{3}} \\\\) | Effective density accounting for porosity and composition | `rho` |
+| \\\\( R_p \\\\) | Fuel pellet radius | \\\\( \\mathrm{m} \\\\) | Outer radius of the fuel pellet | `Rp` |
+| \\\\( R_{clad} \\\\) | Inner cladding radius | \\\\( \\mathrm{m} \\\\) | Internal radius of the cladding | `Rclad` |
+| \\\\( L \\\\) | Active fuel length | \\\\( \\mathrm{m} \\\\) | Active length of a fuel rod | `Length` |
+| \\\\( N_z \\\\) | Number of axial nodes | - | Axial discretization of the fuel rod | `Nz` |
+| \\\\( N_r \\\\) | Number of radial nodes | - | Radial discretization of the fuel pellet | `Nr` |
+| \\\\( N_{FA} \\\\) | Number of fuel assemblies | - | Number of fuel assemblies in the core | `FA` |
+| \\\\( N_{rod/FA} \\\\) | Number of rods per assembly | - | Fuel rods contained in one fuel assembly | `Rods_per_FA` |
+| \\\\( N_{rods} \\\\) | Total number of fuel rods | - | Total number of rods in the reactor core | `Nrods` |
+| \\\\( \\Delta L \\\\) | Axial segment length | \\\\( \\mathrm{m} \\\\) | Height of one axial control volume | `Lseg` |
+| \\\\( r_{s,j} \\\\) | Radial interface position | \\\\( \\mathrm{m} \\\\) | Radius of radial volume boundaries | `rsi[j]` |
+| \\\\( r_{v,j} \\\\) | Radial node position | \\\\( \\mathrm{m} \\\\) | Radius of radial volume centers | `rvi[j]` |
+| \\\\( z_i \\\\) | Axial power weighting factor | \\\\( \\mathrm{m^{-1}} \\\\) | Axial distribution of generated power | `zWt[i]` |
+| \\\\( \\tilde{z}_i \\\\) | Normalized axial power weighting factor | - | Normalized axial distribution of generated power | `zWt_norm[i]` |
+| \\\\( W_t \\\\) | Total thermal power generated in fuel | \\\\( \\mathrm{W} \\\\) | Total fission power deposited in the fuel rods | `Wt` |
+| \\\\( q'_i \\\\) | Linear power density | \\\\( \\mathrm{W/m} \\\\) | Axial linear heat generation rate | `linW[i]` |
+| \\\\( T_{i,j} \\\\) | Fuel temperature | \\\\( \\mathrm{K} \\\\) | Temperature of radial node \\(j\\) in axial zone \\(i\\) | `T[i,j]` |
+| \\\\( T_{i,center} \\\\) | Fuel centerline temperature | \\\\( \\mathrm{K} \\\\) | Extrapolated center temperature of axial zone \\(i\\) | `Tcenter[i]` |
+| \\\\( T_{i,surface} \\\\) | Fuel surface temperature | \\\\( \\mathrm{K} \\\\) | Extrapolated surface temperature of axial zone \\(i\\) | `Tout[i]` |
+| \\\\( T_{g,i} \\\\) | Cladding inner temperature | \\\\( \\mathrm{K} \\\\) | Temperature at the fuel-cladding interface | `Tg[i]` |
+| \\\\( T_{eff,i} \\\\) | Effective fuel temperature | \\\\( \\mathrm{K} \\\\) | Rowlands effective temperature for Doppler calculations | `Teff[i]` |
+| \\\\( T_{eff,g} \\\\) | Global effective fuel temperature | \\\\( \\mathrm{K} \\\\) | Axially averaged effective fuel temperature | `Teffg` |
+| \\\\( T_{start} \\\\) | Initial temperature | \\\\( \\mathrm{K} \\\\) | Initial fuel temperature | `Tstart` |
+| \\\\( c_{p,i,j} \\\\) | Specific heat capacity | \\\\( \\mathrm{J/kg/K} \\\\) | Fuel specific heat capacity | `fuel[i,j].cp` |
+| \\\\( k_{i,j} \\\\) | Thermal conductivity | \\\\( \\mathrm{W/m/K} \\\\) | Fuel thermal conductivity | `fuel[i,j].k` |
+| \\\\( M_{node} \\\\) | Fuel mass per node | \\\\( \\mathrm{kg} \\\\) | Fuel mass associated with one finite volume | `Mnode` |
+| \\\\( h_{gap} \\\\) | Gap heat transfer coefficient | \\\\( \\mathrm{W/m/K} \\\\) | Effective heat transfer coefficient across the fuel-cladding gap | `heat_coeff_gap` |
+| \\\\( S_{clad} \\\\) | Cladding internal surface | \\\\( \\mathrm{m^2} \\\\) | Heat exchange area for one axial segment | `Sseg_cladi` |
+| \\\\( W_{cond,i,j} \\\\) | Conductive heat transfer rate | \\\\( \\mathrm{W} \\\\) | Heat transferred between neighboring radial nodes | `Wcond[i,j]` |
+| \\\\( W_{gap,i} \\\\) | Gap heat transfer rate | \\\\( \\mathrm{W} \\\\) | Heat transferred from fuel surface to cladding | `Wcond[i,Nr+1]` |
+| \\\\( W_t^{in} \\\\) | Fuel thermal power input | \\\\( \\mathrm{W} \\\\) | Total thermal power produced by fission | `Wt_fuel.signal` |
+| \\\\( T_{eff,g}^{out} \\\\) | Effective fuel temperature output | \\\\( \\mathrm{K} \\\\) | Global Doppler-effective fuel temperature | `Teff_fuel.signal` |
+| \\\\( T_{clad,i} \\\\) | Cladding temperature | \\\\( \\mathrm{K} \\\\) | Temperature imposed by the cladding thermal connector | `C_clad[i].T` |
+| \\\\( \\dot{Q}_{clad,i} \\\\) | Heat transferred to the cladding | \\\\( \\mathrm{W} \\\\) | Heat flow exchanged with the cladding | `C_clad[i].W` |
 
-$$Mnode*cp_{i,j}\\frac{dT_{i,j}}{dt} = W_{i,j} + Wcond_{i,j}-Wcond_{i,j+1}$$
+
+## Governing equations
+
+### Heat Transfer Resolution
+
+The finite volumes approach is used, leading to the following equation for each node (axial thermal conduction is neglected):
+
+$$ M_{node} cp_{i,j} \\frac{dT_{i,j}}{dt} = W_{i,j} + W_{cond,i,j} - W_{cond,i,j+1}$$
 
 where the radial themal conduction term is:
 
-$$Wcond_{i,j+1} = \\frac{k_{i,j}+k_{i,j+1}}2 * \\frac{T_{i,j}-T_{i,j+1}}{rvi_{j+1}-rvi_j} * S_{i,j}$$
+$$W_{cond,i,j+1} = \\frac{k_{i,j}+k_{i,j+1}}2  \\frac{T_{i,j}-T_{i,j+1}}{r_{v,j+1}-r_{v,j}} * S_{i,j}$$
 
-and where *i* is the axial index, *j* the radial index, *T* the temperature in the node, *S* the radial surface between two nodes,
- *Mnode* the mass in the node and *W* the power generated in the node.
+and where \\\\(i \\\\) is the axial index, \\\\(j \\\\) the radial index, \\\\(T \\\\)  the temperature in the node, \\\\(S \\\\)  the radial surface between two nodes,
+\\\\(M_{node} \\\\)  the mass in the node and \\\\(W \\\\)  the power generated in the node.
 
 It has to be noticed that the discretization is based on constant volumes, instead of constant radial steps; 
-*rsi* is the radial coordinate of the volumes boundary, *rvi* the radial coordinate of the volumes centers (centers in volumic terms).
+\\\\(r_s \\\\) is the radial coordinate of the volumes boundary, \\\\(r_v \\\\) the radial coordinate of the volumes centers.
 
-## Doppler Effect
+### Doppler Effect
 
 The effective temperature used for the Doppler effect can be computed, for each axial section, using the Rowlands weighting function [1]:
 
@@ -190,15 +234,15 @@ $$T_{i,eff} = \\frac59T_{i,surface} + \\frac49T_{i,center}$$
 
 then, weighted axially as a function of the generated power:
 
-$$T_{effg} = \\frac{W_i}{W_T}*T_{i,eff} $$
+$$T_{eff,g} = \\frac{W_i}{W_T} T_{i,eff} $$
 
 To improve the the representativity of the *center* and *surface* temperatures, they are linearly extrapolated from the volume node temperature:
 
-$$ T_{i,center} = T_{i,1}*1.5 - T_{i,2}*0.5 $$
-$$ T_{i,surface} = T_{i,end}*1.5 - T_{i,end-1}*0.5 $$
+$$ T_{i,center} = \\frac32T_{i,1} - \\frac12T_{i,2} $$
+$$ T_{i,surface} = \\frac32T_{i,end}- \\frac12T_{i,end-1} $$
 
 The *linear* extrapolation is possible because of the constant volume discretization which give a linear solution under certains hypotheses 
-(constant and homogenoeus power, constant conductivity). Under the same assomptions, it is also possible to compare the results in with the analytical solution [2]:
+(constant and homogenoeus power, constant conductivity). Under the same assumptions, it is also possible to compare the results in with the analytical solution [2]:
 
 $$ T_{i,center}-T_{i,surface}=\\frac{W_i}{4\\pi k} $$
 
@@ -207,10 +251,12 @@ and thus validate the extrapolation of the *center* and *surface* values.
 ## Gap Heat Trasfer
 For the gap, the following thermal convection equation is used, where \\\\(h_{gap}\\\\) is a user defined constant:
 
-$$ Wcond_{i,end} = h_{gap} * S_{i,end} * (T_{i,surface} - T_{i,clad}) $$
+$$ W_{cond,i,end} = h_{gap}  S_{i,end}  (T_{i,surface} - T_{i,clad}) $$
 
-- [1]. G. Rowlands, *Resonance absorption and non-uniform temperature distributions*, Journal of Nuclear Energy, 1962.
-- [2]. N.E. Todreas, M. S. Kazimi, Nuclear System I, Thermal Hydraulics Fundamentals. Taylor&Francis, 1798.
+##  References
+
+- [1] G. Rowlands, *Resonance absorption and non-uniform temperature distributions*, Journal of Nuclear Energy, 1962.
+- [2] N.E. Todreas, M. S. Kazimi, Nuclear System I, Thermal Hydraulics Fundamentals. Taylor&Francis, 1798.
 
 ## Copyright © EDF 2002 - 2026  
 

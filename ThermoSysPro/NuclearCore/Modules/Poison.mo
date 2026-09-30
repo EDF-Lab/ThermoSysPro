@@ -1,0 +1,155 @@
+within ThermoSysPro.NuclearCore.Modules;
+model Poison "Vectorial formulation for multiple fission products"
+  parameter Boolean steady_state = true "Steady-state (true) or fixed values (false) initialization" annotation(Dialog(group="Initialization"));
+  parameter Integer Np = 1 "Number of neutron poisons";
+  parameter Real D_start[Np] = fill(0, Np)  "Initial concentration of daughter nuclide (if steady_state=false)" annotation (Dialog(group="Initialization",enable=not steady_state));
+  parameter Real P_start[Np]  = fill(0, Np) "Initial concentration of parent nuclide (if steady_state=false)" annotation (Dialog(group="Initialization",enable=not steady_state));
+  parameter ThermoSysPro.Units.SI.Density FuelDensity = 10950 "Fuel Density" annotation(Dialog(group="Fuel Properties"));
+  parameter Real Enrichment = 0.02433 "Fuel enrichement" annotation(Dialog(group="Fuel Properties"));
+
+  parameter ThermoSysPro.Units.SI.Radius Rp=0.004095 "Radius of the fuel pellet" annotation(Dialog(group="Fuel Volume"));
+  parameter ThermoSysPro.Units.SI.Length Length=4.270 "Active lenght of the fuel rods" annotation(Dialog(group="Fuel Volume"));
+  parameter Integer Rods_per_FA=264 "Number of fuel Rods per Fuel Assembly" annotation(Dialog(group="Fuel Volume"));
+  parameter Integer FA=193 "Number of Fuel Assemblies" annotation(Dialog(group="Fuel Volume"));
+
+protected
+  parameter ThermoSysPro.Units.SI.Volume Vfuel=pi*Rp*Rp*Length*Rods_per_FA*FA "Volume of the fuel";
+  parameter Modelica.Units.SI.NumberDensityOfMolecules fuel_moles_density = FuelDensity * 1000 / (OAtomicMass*2+FAtomicMass) * Modelica.Constants.N_A "Density of Fuel Oxyde Molecules";
+  parameter Modelica.Units.SI.NumberDensityOfMolecules fissil_density = fuel_moles_density * Enrichment "Density of Fissil Atoms";
+
+public
+  constant Real pi=Modelica.Constants.pi "pi";
+  constant Real OAtomicMass = 15.9949 "Oxygen atomic mass";
+
+  parameter Real FastFissionFactor = 1.07 "Fast Fission Factor" annotation(Dialog(group="Nuclear Data"));
+  parameter ThermoSysPro.Units.SI.Area Fuel_Fission_CS = 5.82e-26 "Fuel thermal microscopic fission cross-section" annotation(Dialog(group="Nuclear Data"));
+  parameter ThermoSysPro.Units.SI.Energy FissionEnergy = 3.2e-11 "Energy from each fission" annotation(Dialog(group="Nuclear Data"));
+  parameter Real FAtomicMass = 235.04393 "Fissil atomic mass" annotation(Dialog(group="Nuclear Data"));
+   parameter ThermoSysPro.Units.SI.Frequency P_decay[Np] "Decay constant of parent nuclide" annotation(Dialog(group="Nuclear Data"));
+  parameter ThermoSysPro.Units.SI.Frequency D_decay[Np] "Decay constant of daughter nuclide" annotation(Dialog(group="Nuclear Data"));
+  parameter Real P_yield[Np] "Total fission yield of parent nuclide" annotation(Dialog(group="Nuclear Data"));
+  parameter Real D_yield[Np] "Total fission yield of daughter nuclide" annotation(Dialog(group="Nuclear Data"));
+  parameter ThermoSysPro.Units.SI.Area D_abs_CS[Np] "Microscopic absorption cross-section of daughter nuclide" annotation(Dialog(group="Nuclear Data"));
+
+  ThermoSysPro.Units.SI.TotalNeutronSourceDensity FissionRate "Reactor Fission Rate";
+
+  Real P[Np] "Number of parent nuclei";
+  Real D[Np] "Number of daughter nuclei";
+  ThermoSysPro.Units.SI.NeutronFluenceRate ThNeutronFlux "Neutron Flux (Thermal)";
+
+  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal Power(signal(
+        start=3.8e9))
+    "Thermal Power from fission [W]"
+    annotation (Placement(transformation(extent={{-92,-10},{-72,10}})));
+  ThermoSysPro.InstrumentationAndControl.Connectors.OutputReal Poisons[Np]
+    annotation (Placement(transformation(extent={{72,-10},{92,10}}),
+        iconTransformation(extent={{72,-10},{92,10}})));
+initial equation
+  if steady_state then
+    for i in 1:Np loop
+      der(P[i]) = 0;
+      der(D[i]) = 0;
+    end for;
+  else
+    P = P_start;
+    D = D_start;
+  end if;
+
+equation
+  Poisons.signal = D;
+
+  Power.signal / Vfuel = FissionEnergy * FissionRate;
+  FissionRate = FastFissionFactor * ThNeutronFlux * Fuel_Fission_CS * fissil_density;
+
+   for i in 1:Np loop
+      der(P[i]) =  FissionRate*P_yield[i] - P[i]*P_decay[i];
+      der(D[i]) =  FissionRate*D_yield[i] + P[i]*P_decay[i] - D[i]*D_decay[i] - ThNeutronFlux*D[i]*D_abs_CS[i];
+   end for;
+
+  annotation (                                   Icon(graphics={
+        Rectangle(extent={{-80,80},{80,-80}}, lineColor={0,0,0},
+          fillColor={255,128,0},
+          fillPattern=FillPattern.Sphere),
+        Text(
+          extent={{-60,64},{60,-58}},
+          lineColor={0,198,99},
+          textStyle={TextStyle.Bold},
+          textString="Poisons")}),
+                              Documentation(info="# Poison module
+
+The *Poison* model provides a vectorial formulation for the evolution of multiple neutron poisons in the core. It represents the production, decay, and neutron absorption of parent and daughter nuclides generated by fission reactions.
+The model is generic and allows the treatment of an arbitrary number of poisons through the parameter \\\\(N_p\\\\). Each poison chain consists of:
+- A parent nuclide \\\\(P_i\\\\)​, directly produced by fission and decaying into a daughter nuclide.
+- A daughter nuclide \\\\(D_i\\\\)​, produced both directly by fission and through the decay of the parent nuclide.
+- Neutron absorption by the daughter nuclide, which removes poison nuclei from the system.
+
+The model computes the poison concentrations and provides them through the output vector *Poisons*.
+
+
+
+## Nomenclature
+
+| Symbol | Description | Unit | Definition | Modelica name |
+|:------:|-------------|:----:|------------|--------------|
+| \\\\( N_p \\\\) | Number of neutron poisons considered | - | Number of parent-daughter poison chains modeled | `Np` |
+| \\\\( P_{0,i} \\\\) | Initial parent nuclide inventory | nuclei | Used when `steady_state=false` | `P_start[i]` |
+| \\\\( D_{0,i} \\\\) | Initial daughter nuclide inventory | nuclei | Used when `steady_state=false` | `D_start[i]` |
+| \\\\( \\rho_f \\\\) | Fuel density | \\\\( \\mathrm{kg/m^{3}} \\\\) | Density of the fuel material | `FuelDensity` |
+| \\\\( e\\\\) | Fuel enrichment | - | Fraction of fissile atoms in the fuel | `Enrichment` |
+| \\\\( R_p \\\\) | Fuel pellet radius | \\\\( \\mathrm{m} \\\\) | Radius of a fuel pellet | `Rp` |
+| \\\\( L \\\\) | Active fuel rod length | \\\\( \\mathrm{m} \\\\) | Active length of a fuel rod | `Length` |
+| \\\\( N_r \\\\) | Number of rods per fuel assembly | - | Fuel rods contained in one assembly | `Rods_per_FA` |
+| \\\\( N_{FA} \\\\) | Number of fuel assemblies | - | Total number of fuel assemblies in the core | `FA` |
+| \\\\( k_f \\\\) | Fast fission factor | - | Ratio accounting for additional fast fissions | `FastFissionFactor` |
+| \\\\( \\sigma_f \\\\) | Microscopic thermal fission cross section | \\\\( \\mathrm{m^2} \\\\) | Fuel fission microscopic cross section | `Fuel_Fission_CS` |
+| \\\\( E_f \\\\) | Energy released per fission | \\\\( \\mathrm{J} \\\\) | Average energy deposited by one fission event | `FissionEnergy` |
+| \\\\( M_f \\\\) | Fissile isotope atomic mass | \\\\( \\mathrm{g/mol} \\\\) | Atomic mass of fissile material | `FAtomicMass` |
+| \\\\( M_O \\\\) | Oxygen atomic mass | \\\\( \\mathrm{g/mol} \\\\) | Atomic mass of oxygen | `OAtomicMass` |
+| \\\\( \\lambda_{P,i} \\\\) | Parent decay constant | \\\\( \\mathrm{1/s} \\\\) | Radioactive decay rate of parent nuclide | `P_decay[i]` |
+| \\\\( \\lambda_{D,i} \\\\) | Daughter decay constant | \\\\( \\mathrm{1/s} \\\\) | Radioactive decay rate of daughter nuclide | `D_decay[i]` |
+| \\\\( Y_{P,i} \\\\) | Parent fission yield | - | Fraction of fissions producing parent nuclide | `P_yield[i]` |
+| \\\\( Y_{D,i} \\\\) | Daughter fission yield | - | Fraction of fissions producing daughter nuclide directly | `D_yield[i]` |
+| \\\\( \\sigma_{a,i} \\\\) | Daughter absorption cross section | \\\\( \\mathrm{m^2} \\\\) | Microscopic neutron absorption cross section of daughter nuclide | `D_abs_CS[i]` |
+| \\\\( V_{fuel} \\\\) | Fuel volume | \\\\( \\mathrm{m^3} \\\\) | Total fuel volume in the core | `Vfuel` |
+| \\\\( N_{fuel} \\\\) | Fuel molecule density | \\\\( \\mathrm{1/m^{3}} \\\\) | Number density of fuel oxide molecules | `fuel_moles_density` |
+| \\\\( N_{fis} \\\\) | Fissile atom density | \\\\( \\mathrm{1/m^{3}} \\\\) | Density of fissile atoms in fuel | `fissil_density` |
+| \\\\( \\phi \\\\) | Thermal neutron flux | \\\\( \\mathrm{1/m^{2}/s} \\\\) | Thermal neutron flux in the reactor | `ThNeutronFlux` |
+| \\\\( F \\\\) | Fission rate density | \\\\( \\mathrm{fissions/m^{3}/s} \\\\) | Volumetric fission production rate | `FissionRate` |
+| \\\\( P_i \\\\) | Parent nuclide inventory | nuclei | Number of parent nuclei of poison chain \\\\( i \\\\) | `P[i]` |
+| \\\\( D_i \\\\) | Daughter nuclide inventory | nuclei | Number of daughter nuclei of poison chain \\\\( i \\\\) | `D[i]` |
+| \\\\( Power \\\\) | Reactor thermal power | \\\\( \\mathrm{W} \\\\) | Thermal power generated by fission | `Power.signal` |
+| \\\\( Poisons_i \\\\) | Poison inventory output | nuclei | Daughter nuclide inventory exported by the model | `Poisons[i].signal` |
+
+
+
+
+
+## Governing equations
+
+Overall, the evolution of neutron poison concentration follows the Bateman equations. The following equations are valid for each poison chain \\\\( i \\in [1, N_p] \\\\).
+
+$$ \\frac{dP_{i}}{dt} = F Y_{P_i} - P_i  \\lambda_{P_i} $$
+
+$$ \\frac{dD_{i}}{dt} = F Y_{D_i} + P_i  \\lambda_{P_i} - D_i  \\lambda_{D_i} - \\phi \\sigma_{a,i}  D_i$$
+
+For the parent nuclide, the first term represents direct production by fission, while the second term represents radioactive decay. As for the daughter balance equation, the terms represent the 
+direct product by fission, the production from the decay of the parent nucldie, the radioactive decay of the daughter, and the poison burnout by neutron absorption.
+
+The fission rate \\\\(F\\\\) is computed from the thermal power:
+
+$$  Power / V_{fuel} = E_f  F $$
+
+and \\\\(\\phi\\\\) from the \\\\(F\\\\), taking into account a small amount of fast fissions:
+
+$$ F = k_f  \\phi  \\sigma_f  N_{fis} $$
+
+where \\\\(k_f\\\\) is the ratio between the total number of fissions and the thermal ones, \\\\(\\sigma_f\\\\) the microscopic fission cross-section of the fuel
+and \\\\(N_{fis}\\\\) the density of fissil atoms in the fuel. The used microscopic cross-section values should refer to the thermal neutron flux.
+
+
+## Copyright © EDF 2002 - 2026   
+## ThermoSysPro Version 4.2 
+
+
+"));
+end Poison;
