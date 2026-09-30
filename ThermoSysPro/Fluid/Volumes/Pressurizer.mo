@@ -1,33 +1,55 @@
 within ThermoSysPro.Fluid.Volumes;
 
 model Pressurizer "Pressurizer"
-  extends ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.WaterSteamFluidTypeParameterInterface;
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType;
-  parameter Units.SI.Volume V = 61.1 "Pressurizer volume";
-  parameter Units.SI.Radius Rp = 1.265 "Pressurizer cross-sectional radius";
-  parameter Units.SI.Area Ae = 1 "Wall surface";
-  parameter Units.SI.Position Zm = 10.15 "Hauteur de la gamme de mesure niveau";
-  parameter Real Ccond = 0.1 "Condensation coefficient";
-  parameter Real Cevap = 0.1 "Evaporation coefficient";
-  parameter Units.SI.CoefficientOfHeatTransfer Klv = 0.5e6 "Heat exchange coefficient between the liquid and gas phases";
-  parameter Units.SI.CoefficientOfHeatTransfer Klp = 50000 "Heat exchange coefficient between the liquid phase and the wall";
-  parameter Units.SI.CoefficientOfHeatTransfer Kvp = 25 "Heat exchange coefficient between the gas phase and the wall";
-  parameter Units.SI.CoefficientOfHeatTransfer Kpa = 542 "Heat exchange coefficient between the wall and the outside";
-  parameter Units.SI.Mass Mp = 117e3 "Wall mass";
-  parameter Units.SI.SpecificHeatCapacity cpp = 600 "Wall specific heat";
-  parameter Boolean dynamic_energy_balance = true "true: dynamic energy balance equation - false: static energy balance equation";
-  parameter Boolean steady_state = true "true: start from steady state - false: start from (P0, Vf0) (active if dynamic_energy_balance=true)" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_energy_balance));
-  parameter Real Yw0 = 50 "Initial water level - percent of the measure scale level (active if steady_state=false)" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_energy_balance and not steady_state));
-  parameter Units.SI.AbsolutePressure P0 = 155e5 "Initial fluid pressure (active if steady_state=false)" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_energy_balance and not steady_state));
-  parameter Boolean continuous_flow_reversal = false "true: continuous flow reversal - false: discontinuous flow reversal";
-  parameter Boolean diffusion = false "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Cs.SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+
+  parameter Units.SI.Volume V=61.1 "Pressurizer volume";
+  parameter Units.SI.Radius Rp=1.265 "Pressurizer cross-sectional radius";
+  parameter Units.SI.Area Ae=1 "Wall surface";
+  parameter Units.SI.Position Zm=10.15 "Hauteur de la gamme de mesure niveau";
+  parameter Real Ccond=0.1 "Condensation coefficient";
+  parameter Real Cevap=0.1 "Evaporation coefficient";
+  parameter Units.SI.CoefficientOfHeatTransfer Klv=0.5e6
+    "Heat exchange coefficient between the liquid and gas phases";
+  parameter Units.SI.CoefficientOfHeatTransfer Klp=50000
+    "Heat exchange coefficient between the liquid phase and the wall";
+  parameter Units.SI.CoefficientOfHeatTransfer Kvp=25
+    "Heat exchange coefficient between the gas phase and the wall";
+  parameter Units.SI.CoefficientOfHeatTransfer Kpa=542
+    "Heat exchange coefficient between the wall and the outside";
+  parameter Units.SI.Mass Mp=117e3 "Wall mass";
+  parameter Units.SI.SpecificHeatCapacity cpp=600 "Wall specific heat";
+  parameter Boolean dynamic_energy_balance=true
+    "true: dynamic energy balance equation - false: static energy balance equation";
+  parameter Boolean steady_state=true
+    "true: start from steady state - false: start from (P0, Vf0) (active if dynamic_energy_balance=true)" annotation(Evaluate=true, Dialog(enable=dynamic_energy_balance));
+  parameter Real Yw0=50
+    "Initial water level - percent of the measure scale level (active if steady_state=false)" annotation(Evaluate=true, Dialog(enable=dynamic_energy_balance and not steady_state));
+  parameter Units.SI.AbsolutePressure P0=155e5
+    "Initial fluid pressure (active if steady_state=false)" annotation (
+      Evaluate=true, Dialog(enable=dynamic_energy_balance and not steady_state));
+  parameter Boolean continuous_flow_reversal=false "true: continuous flow reversal - false: discontinuous flow reversal";
+  parameter Boolean diffusion=false
+    "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+  parameter Medium.ExtraProperty SubCl0[Medium.nC](quantity=Medium.extraPropertiesNames)=Medium.C_default
+    "Initial liquid phase trace substances"
+    annotation (Evaluate=true, Dialog(enable=dynamic_energy_balance and not steady_state));
+  parameter Medium.ExtraProperty SubCv0[Medium.nC](quantity=Medium.extraPropertiesNames)=Medium.C_default
+    "Initial vapor phase trace substances"
+    annotation (Evaluate=true, Dialog(enable=dynamic_energy_balance and not steady_state));
+
+protected
+  constant Real pi=Modelica.Constants.pi "Pi";
+  constant Units.SI.Acceleration g=Modelica.Constants.g_n "Gravity constant";
+  parameter Units.SI.MassFlowRate gamma0=1.e-4
+    "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
+  parameter Units.SI.Area Ap=pi*Rp*Rp "Pressurizer cross-sectional area";
+  Medium.C_BiPhase C_record;
+
+public
   Units.SI.Area Slpin "Exchange surface between the liquid and the wall";
   Units.SI.Area Svpin "Exchange surface between the vapor and the wall";
   Real Yw(start = 50) "Liquid level as a percent of the measure scale";
@@ -50,15 +72,20 @@ model Pressurizer "Pressurizer"
   Units.SI.Power Wpv "Thermal power exchanged from the gas phase to the wall";
   Units.SI.Power Wpa "Thermal power exchanged from the outside to the wall";
   Units.SI.Power Wch "Power released by the electrical heaters";
-  Units.SI.MassFlowRate BQl "Right hand side of the mass balance equation of the liquid phase";
-  Units.SI.MassFlowRate BQv "Right hand side of the mass balance equation of the gas phase";
-  Units.SI.Power BHl "Right hand side of the energy balance equation of the liquid phase";
-  Units.SI.Power BHv "Right hand side of the energy balance equation of the gas phase";
-  Units.SI.MassFlowRate Qcond "Condensation mass flow rate from the vapor phase";
-  Units.SI.MassFlowRate Qevap "Evaporation mass flow rate from the liquid phase";
-  Units.SI.Density rhol(start = 996) "Liquid phase density";
-  Units.SI.Density rhov(start = 1.5) "Vapor phase density";
-  FluidType fluids[4] "Fluids mixing in volume";
+  Units.SI.MassFlowRate BQl
+    "Right hand side of the mass balance equation of the liquid phase";
+  Units.SI.MassFlowRate BQv
+    "Right hand side of the mass balance equation of the gas phase";
+  Units.SI.Power BHl
+    "Right hand side of the energy balance equation of the liquid phase";
+  Units.SI.Power BHv
+    "Right hand side of the energy balance equation of the gas phase";
+  Units.SI.MassFlowRate Qcond
+    "Condensation mass flow rate from the vapor phase";
+  Units.SI.MassFlowRate Qevap
+    "Evaporation mass flow rate from the liquid phase";
+  Units.SI.Density rhol(start=996) "Liquid phase density";
+  Units.SI.Density rhov(start=1.5) "Vapor phase density";
   Units.SI.Power Jas "Thermal power diffusion from inlet Cas";
   Units.SI.Power Jex "Thermal power diffusion from outlet Cex";
   Units.SI.Power Js "Thermal power diffusion from outlet Cs";
@@ -70,32 +97,41 @@ model Pressurizer "Pressurizer"
   Real ras "Value of r(Q/gamma) for inlet Cas";
   Real rex "Value of r(Q/gamma) for outlet Cex";
   Real rs "Value of r(Q/gamma) for outlet Cs";
-  Interfaces.Connectors.FluidInlet Cas "Water input" annotation(
-    Placement(transformation(extent = {{-8, 92}, {8, 108}}, rotation = 0)));
-  Interfaces.Connectors.FluidOutlet Cs "Steam output" annotation(
-    Placement(transformation(extent = {{92, 90}, {108, 106}}, rotation = 0)));
-  ThermoSysPro.Thermal.Connectors.ThermalPort Ca "Thermal input to the wall" annotation(
-    Placement(transformation(extent = {{-100, -8}, {-80, 12}}, rotation = 0)));
-  ThermoSysPro.Thermal.Connectors.ThermalPort Cc "Thermal input to the liquid" annotation(
-    Placement(transformation(extent = {{-10, -42}, {10, -22}}, rotation = 0)));
-  ThermoSysPro.InstrumentationAndControl.Connectors.OutputReal yLevel "Water level" annotation(
-    Placement(transformation(extent = {{80, -10}, {100, 10}}, rotation = 0)));
-  Interfaces.Connectors.FluidOutlet Cex "Water output" annotation(
-    Placement(transformation(extent = {{-8, -108}, {8, -92}}, rotation = 0)));
-  Properties.WaterSteam.Common.ThermoProperties_ph prov "Propri鴩s de la vapeur dans le ballon" annotation(
-    Placement(transformation(extent = {{16, 44}, {56, 84}}, rotation = 0)));
-  Properties.WaterSteam.Common.ThermoProperties_ph prol "Propri鴩s de l'eau dans le ballon" annotation(
-    Placement(transformation(extent = {{-54, 44}, {-14, 84}}, rotation = 0)));
-  Properties.WaterSteam.Common.PropThermoSat lsat annotation(
-    Placement(transformation(extent = {{-54, 4}, {-14, 44}}, rotation = 0)));
-  Properties.WaterSteam.Common.PropThermoSat vsat annotation(
-    Placement(transformation(extent = {{16, 4}, {56, 44}}, rotation = 0)));
-protected
-  constant Real pi = Modelica.Constants.pi "Pi";
-  constant Units.SI.Acceleration g = Modelica.Constants.g_n "Gravity constant";
-  parameter Integer fluid = Integer(ftype) "Fluid number";
-  parameter Units.SI.MassFlowRate gamma0 = 1.e-4 "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  parameter Units.SI.Area Ap = pi*Rp*Rp "Pressurizer cross-sectional area";
+  Medium.ExtraProperty BSubCl[Medium.nC](quantity=Medium.extraPropertiesNames)
+    "Right hand side of the trace balance equation of the liquid phase";
+  Medium.ExtraProperty BSubCv[Medium.nC](quantity=Medium.extraPropertiesNames)
+    "Right hand side of the trace balance equation of the vapor phase";
+  Medium.ExtraProperty SubCl[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default)
+    "Liquid phase trace substances";
+  Medium.ExtraProperty SubCv[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default)
+    "Vapor phase trace substances";
+  Medium.ExtraProperty SubCSaS[Medium.nC](quantity=Medium.extraPropertiesNames)
+    "Trace modification in the trace balance equation";
+  Medium.ThermodynamicState state_l "Liquid state in the pressurizer";
+  Medium.ThermodynamicState state_v "Vapor state in the pressurizer";
+  Medium.SaturationProperties sat "Saturation properties at pressurizer pressure";
+  Real ddphl "Liquid density derivative wrt. pressure at constant enthalpy";
+  Real ddhpl "Liquid density derivative wrt. enthalpy at constant pressure";
+  Real ddphv "Vapor density derivative wrt. pressure at constant enthalpy";
+  Real ddhpv "Vapor density derivative wrt. enthalpy at constant pressure";
+
+  Interfaces.Connectors.FluidInlet Cas(redeclare package Medium = Medium) "Water input" annotation (Placement(
+        transformation(extent={{-8,92},{8,108}}, rotation=0)));
+  Interfaces.Connectors.FluidOutlet Cs(redeclare package Medium = Medium) "Steam output" annotation (Placement(
+        transformation(extent={{92,90},{108,106}}, rotation=0)));
+  ThermoSysPro.Thermal.Connectors.ThermalPort Ca "Thermal input to the wall"
+    annotation (Placement(transformation(extent={{-100,-8},{-80,12}}, rotation=
+            0)));
+  ThermoSysPro.Thermal.Connectors.ThermalPort Cc "Thermal input to the liquid"
+    annotation (Placement(transformation(extent={{-10,-42},{10,-22}}, rotation=
+            0)));
+
+public
+  ThermoSysPro.InstrumentationAndControl.Connectors.OutputReal yLevel
+    "Water level"
+    annotation (Placement(transformation(extent={{80,-10},{100,10}}, rotation=0)));
+  Interfaces.Connectors.FluidOutlet Cex(redeclare package Medium = Medium) "Water output" annotation (Placement(
+        transformation(extent={{-8,-108},{8,-92}}, rotation=0)));
 initial equation
   if dynamic_energy_balance then
     if steady_state then
@@ -104,33 +140,27 @@ initial equation
       der(hv) = 0;
       der(y) = 0;
       der(Tp) = 0;
+      der(SubCl) = fill(0, Medium.nC);
+      der(SubCv) = fill(0, Medium.nC);
     else
       P = P0;
       hl = hls;
       hv = hvs;
       Yw = Yw0;
       der(Tp) = 0;
+      SubCl = SubCl0;
+      SubCv = SubCv0;
     end if;
   end if;
 equation
-/* Check that incoming fluids are compatible with fluid in volume */
-  fluids[1] = ftype;
-  fluids[2] = Cas.ftype;
-  fluids[3] = Cex.ftype;
-  fluids[4] = Cs.ftype;
-  assert(ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.isCompatible(fluids), "Pressurizer: fluids mixing in volume are not compatible with each other");
-/* Unconnected connectors */
+  /* Unconnected connectors */
   if (cardinality(Cas) == 0) then
     Cas.Q = 0;
     Cas.h = 1.e5;
     Cas.h_vol_1 = 1.e5;
     Cas.diff_res_1 = 0;
     Cas.diff_on_1 = false;
-    Cas.ftype = ftype;
-    Cas.Xco2 = 0;
-    Cas.Xh2o = 0;
-    Cas.Xo2 = 0;
-    Cas.Xso2 = 0;
+    Cas.SubC = Medium.C_default;
   end if;
   if (cardinality(Cex) == 0) then
     Cex.Q = 0;
@@ -161,14 +191,14 @@ equation
 /* Liquid phase mass balance equation */
   BQl = Cas.Q - Cex.Q + Qcond - Qevap;
   if dynamic_energy_balance then
-    rhol*Ap*Zm*der(y) + Vl*prol.ddph*der(P) + Vl*prol.ddhp*der(hl) = BQl;
+    rhol*Ap*Zm*der(y) + Vl*ddphl*der(P) + Vl*ddhpl*der(hl) = BQl;
   else
     0 = BQl;
   end if;
 /* Gas phase mass balance equation */
   BQv = Qevap - Cs.Q - Qcond;
   if dynamic_energy_balance then
-    -rhov*Ap*Zm*der(y) + Vv*prov.ddph*der(P) + Vv*prov.ddhp*der(hv) = BQv;
+    -rhov*Ap*Zm*der(y) + Vv*ddphv*der(P) + Vv*ddhpv*der(hv) = BQv;
   else
     0 = BQv;
   end if;
@@ -209,18 +239,26 @@ equation
   Wpv = Kvp*Svpin*(Tv - Tp);
 /* Heat exchange between the wall and the outside */
   Wpa = Kpa*Ae*(Ta - Tp);
-/* Fluid composition (no balance equations) */
-  Cex.ftype = ftype;
-  Cs.ftype = ftype;
-  Cs.Xco2 = 0;
-  Cs.Xh2o = 0;
-  Cs.Xo2 = 0;
-  Cs.Xso2 = 0;
-  Cex.Xco2 = 0;
-  Cex.Xh2o = 0;
-  Cex.Xo2 = 0;
-  Cex.Xso2 = 0;
-/* Flow reversal */
+
+  /* Traces composition balance equations */
+  C_record = PhasesSeparationFunction();
+  SubCSaS = SaS();
+
+  BSubCl = Cas.Q*Cas.SubC - Cex.Q*Cex.SubC + Qcond*C_record.Cl - Qevap*SubCl;
+  BSubCv = Qevap*SubCl - Cs.Q*Cs.SubC - Qcond*C_record.Cg;
+
+  if dynamic_energy_balance then
+    rhol*Vl*der(SubCl) + SubCl*BQl = BSubCl;
+    rhov*Vv*der(SubCv) + SubCv*BQv + rhov*Vv*SubCSaS = BSubCv;
+  else
+    SubCl*BQl = BSubCl;
+    SubCv*BQv + rhov*Vv*SubCSaS = BSubCv;
+  end if;
+
+  Cex.SubC = SubCl;
+  Cs.SubC = SubCv;
+
+  /* Flow reversal */
   if continuous_flow_reversal then
     Cex.h = ThermoSysPro.Functions.SmoothCond(Cex.Q/gamma_ex, Cex.h_vol_1, Cex.h_vol_2, 1);
     Cs.h = ThermoSysPro.Functions.SmoothCond(Cs.Q/gamma_s, Cs.h_vol_1, Cs.h_vol_2, 1);
@@ -258,19 +296,105 @@ equation
   Cas.diff_on_2 = diffusion;
   Cex.diff_on_1 = diffusion;
   Cs.diff_on_1 = diffusion;
-/* Fluid thermodynamic properties */
-  prol = ThermoSysPro.Properties.Fluid.Ph(P, hl, 0, fluid);
-  prov = ThermoSysPro.Properties.Fluid.Ph(P, hv, 0, fluid);
-  (lsat, vsat) = ThermoSysPro.Properties.Fluid.Water_sat_P(P, fluid);
-  Tl = prol.T;
-  Tv = prov.T;
-  rhol = prol.d;
-  rhov = prov.d;
-  hls = lsat.h;
-  hvs = vsat.h;
-  annotation(
-    Icon(graphics = {Line(points = {{100, 90}, {100, 60}, {80, 60}, {80, 60}}, color = {28, 108, 200}, thickness = 1), Ellipse(extent = {{-80, -92}, {80, -42}}, lineColor = {85, 170, 255}, fillColor = DynamicSelect({85, 170, 255}, if dynamic_energy_balance then fill_color_dynamic else if diffusion then fill_color_singular else fill_color_static), fillPattern = DynamicSelect(FillPattern.Sphere, if dynamic_energy_balance then FillPattern.Sphere else FillPattern.Solid), lineThickness = 0.5), Rectangle(extent = {{-80, -14}, {80, -68}}, lineColor = {85, 170, 255}, fillColor = DynamicSelect({85, 170, 255}, if dynamic_energy_balance then fill_color_dynamic else if diffusion then fill_color_singular else fill_color_static), fillPattern = DynamicSelect(FillPattern.VerticalCylinder, if dynamic_energy_balance then FillPattern.VerticalCylinder else FillPattern.Solid), lineThickness = 0.5), Ellipse(extent = {{-80, 42}, {80, 92}}, lineColor = {28, 108, 200}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Line(points = {{0, 40}, {0, 92}}, color = {28, 108, 200}, thickness = 1), Line(points = {{0, 38}, {0, 92}}, color = {255, 255, 255}), Rectangle(extent = {{-80, -14}, {80, 68}}, lineColor = {28, 108, 200}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Line(points = {{-79, 68}, {80, 68}}, color = {255, 255, 255}), Line(points = {{80, 60}, {100, 60}, {100, 90}}, color = {255, 255, 255})}),
-    Diagram(graphics = {Ellipse(extent = {{-80, -92}, {80, -42}}, lineColor = {28, 108, 200}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Solid), Rectangle(extent = {{-80, -14}, {80, -68}}, lineColor = {85, 170, 255}, fillColor = {85, 170, 255}, fillPattern = FillPattern.Solid), Ellipse(extent = {{-80, 42}, {80, 92}}, lineColor = {28, 108, 200}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Line(points = {{0, 40}, {0, 92}}, color = {28, 108, 200}, thickness = 1), Line(points = {{0, 38}, {0, 92}}, color = {255, 255, 255}), Rectangle(extent = {{-80, -14}, {80, 68}}, lineColor = {28, 108, 200}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Line(points = {{-79, 68}, {80, 68}}, color = {255, 255, 255}), Text(extent = {{58, 4}, {58, -10}}, lineColor = {0, 0, 255}, textString = "Niveau"), Line(points = {{100, 90}, {100, 60}, {80, 60}, {80, 60}}, color = {28, 108, 200}, thickness = 1), Line(points = {{80, 60}, {100, 60}, {100, 90}}, color = {255, 255, 255})}),
+
+  /* Fluid thermodynamic properties */
+  state_l = Medium.setState_phX(p=P, h=hl, X=Medium.reference_X);
+  state_v = Medium.setState_phX(p=P, h=hv, X=Medium.reference_X);
+  sat = Medium.setSat_p(P);
+
+  ddphl = Medium.density_derp_h(state_l);
+  ddhpl = Medium.density_derh_p(state_l);
+  ddphv = Medium.density_derp_h(state_v);
+  ddhpv = Medium.density_derh_p(state_v);
+
+  Tl = Medium.temperature(state_l);
+  Tv = Medium.temperature(state_v);
+  rhol = Medium.density(state_l);
+  rhov = Medium.density(state_v);
+  hls = Medium.bubbleEnthalpy(sat);
+  hvs = Medium.dewEnthalpy(sat);
+
+  annotation (Icon(graphics={
+        Line(
+          points={{100,90},{100,60},{80,60},{80,60}},
+          color={28,108,200},
+          thickness=1),
+        Ellipse(
+          extent={{-80,-92},{80,-42}},
+          lineColor={85,170,255},
+          fillColor= DynamicSelect({85,170,255},
+          if dynamic_energy_balance then fill_color_dynamic
+          else if diffusion then fill_color_singular
+          else fill_color_static),
+          fillPattern=DynamicSelect(FillPattern.Sphere,
+          if dynamic_energy_balance then FillPattern.Sphere
+          else FillPattern.Solid),
+          lineThickness=0.5),
+        Rectangle(
+          extent={{-80,-14},{80,-68}},
+          lineColor={85,170,255},
+          fillColor= DynamicSelect({85,170,255},
+          if dynamic_energy_balance then fill_color_dynamic
+          else if diffusion then fill_color_singular
+          else fill_color_static),
+          fillPattern=DynamicSelect(FillPattern.VerticalCylinder,
+          if dynamic_energy_balance then FillPattern.VerticalCylinder
+          else FillPattern.Solid),
+          lineThickness=0.5),
+        Ellipse(
+          extent={{-80,42},{80,92}},
+          lineColor={28,108,200},
+          fillColor={255,255,255},
+          fillPattern=FillPattern.Solid),
+        Line(
+          points={{0,40},{0,92}},
+          color={28,108,200},
+          thickness=1),
+        Line(points={{0,38},{0,92}}, color={255,255,255}),
+        Rectangle(
+          extent={{-80,-14},{80,68}},
+          lineColor={28,108,200},
+          fillColor={255,255,255},
+          fillPattern=FillPattern.Solid),
+        Line(points={{-79,68},{80,68}}, color={255,255,255}),
+        Line(points={{80,60},{100,60},{100,90}}, color={255,255,255})}),
+                            Diagram(graphics={
+        Ellipse(
+          extent={{-80,-92},{80,-42}},
+          lineColor={28,108,200},
+          fillColor={85,170,255},
+          fillPattern=FillPattern.Solid),
+        Rectangle(
+          extent={{-80,-14},{80,-68}},
+          lineColor={85,170,255},
+          fillColor={85,170,255},
+          fillPattern=FillPattern.Solid),
+        Ellipse(
+          extent={{-80,42},{80,92}},
+          lineColor={28,108,200},
+          fillColor={255,255,255},
+          fillPattern=FillPattern.Solid),
+        Line(
+          points={{0,40},{0,92}},
+          color={28,108,200},
+          thickness=1),
+        Line(points={{0,38},{0,92}}, color={255,255,255}),
+        Rectangle(
+          extent={{-80,-14},{80,68}},
+          lineColor={28,108,200},
+          fillColor={255,255,255},
+          fillPattern=FillPattern.Solid),
+        Line(points={{-79,68},{80,68}}, color={255,255,255}),
+        Text(
+          extent={{58,4},{58,-10}},
+          lineColor={0,0,255},
+          textString=
+               "Niveau"),
+        Line(
+          points={{100,90},{100,60},{80,60},{80,60}},
+          color={28,108,200},
+          thickness=1),
+        Line(points={{80,60},{100,60},{100,90}}, color={255,255,255})}),
     Documentation(info = "
 ## Copyright © EDF 2002 - 2026   
 ## ThermoSysPro Version 4.2   

@@ -1,19 +1,31 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.Volume;
 
 model TestSteamDryer
-  ThermoSysPro.Fluid.Junctions.SteamDryer steamDryer(eta = 0.9, P(start = 10000000)) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Junctions.SteamDryer steamDryer(
+          redeclare package Medium = Medium,
+          eta=0.9, P(start=
+          10000000)) annotation(
     Placement(transformation(extent = {{-10, -8}, {10, 12}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourceQ(P0 = 10000000, h0 = 2400000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourceQ(
+        redeclare package Medium = Medium,
+        P0=10000000, h0=
+        2400000) annotation(
     Placement(transformation(extent = {{-90, -4}, {-70, 16}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss2 annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss2 (redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-50, -4}, {-30, 16}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink sinkP annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink sinkP (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{70, -4}, {90, 16}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss1 annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss1 (redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{30, -4}, {50, 16}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss3(K = 1.e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss3(
+      redeclare package Medium = Medium,
+      K=1.e-4) annotation(
     Placement(transformation(extent = {{30, -44}, {50, -24}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink sink annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink sink (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{70, -44}, {90, -24}}, rotation = 0)));
 equation
   connect(sourceQ.C, singularPressureLoss2.C1) annotation(

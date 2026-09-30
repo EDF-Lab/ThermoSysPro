@@ -1,17 +1,24 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.PressureLoss;
 
 model TestSwitchValve
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-90, -10}, {-70, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP1 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{70, -10}, {90, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SwitchValve SwitchValve annotation(
+  ThermoSysPro.Fluid.PressureLosses.SwitchValve SwitchValve (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-18, -9}, {18, 37}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Logique.Pulse pulse(width = 10, period = 20) annotation(
     Placement(transformation(extent = {{-50, 31}, {-30, 51}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe perteDP2 annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe perteDP2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-55, -10}, {-35, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe perteDP1 annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe perteDP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{34, -10}, {54, 10}}, rotation = 0)));
 equation
   connect(pulse.yL, SwitchValve.Ouv) annotation(

@@ -1,25 +1,32 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.Volume;
 
 model TestMixer3
-  ThermoSysPro.Fluid.Junctions.Mixer3 mixer2_2 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Junctions.Mixer3 mixer2_2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-6, -10}, {14, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss3 annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss3 (redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{34, -10}, {54, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss4 annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss4 (redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-46, 10}, {-26, 30}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss5 annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss5 (redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-46, -30}, {-26, -10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Source sourceP2 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Source sourceP2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-86, 10}, {-66, 30}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP3 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP3 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-86, -30}, {-66, -10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkP1 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{74, -10}, {94, 10}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante constante1(k = 0.5) annotation(
     Placement(transformation(extent = {{-46, 30}, {-26, 50}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceQ sourceQ annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceQ sourceQ (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-86, -10}, {-66, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss6 annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss6 (redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-46, -10}, {-26, 10}}, rotation = 0)));
 equation
   connect(singularPressureLoss4.C2, mixer2_2.Ce1) annotation(

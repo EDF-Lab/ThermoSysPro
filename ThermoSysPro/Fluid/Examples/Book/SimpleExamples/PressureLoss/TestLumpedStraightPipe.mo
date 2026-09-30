@@ -1,11 +1,21 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.PressureLoss;
 
 model TestLumpedStraightPipe
-  ThermoSysPro.Fluid.Volumes.Tank tank1(h0 = 2e5) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Volumes.Tank tank1(
+    redeclare package Medium = Medium,
+    h0=2e5) annotation(
     Placement(transformation(extent = {{-50, 16}, {-30, 36}}, rotation = 0)));
-  ThermoSysPro.Fluid.Volumes.Tank tank2(z0 = 10) annotation(
+  ThermoSysPro.Fluid.Volumes.Tank tank2(
+    redeclare package Medium = Medium,
+    z0=10) annotation(
     Placement(transformation(extent = {{30, 16}, {50, 36}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(inertia = true, lambda = 0.012, lambda_fixed = true) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(
+    redeclare package Medium = Medium,
+    inertia=true,
+    lambda=0.012,
+    lambda_fixed=true) annotation(
     Placement(transformation(extent = {{-10, -24}, {10, -4}}, rotation = 0)));
 equation
   connect(tank1.Cs2, lumpedStraightPipe.C1) annotation(

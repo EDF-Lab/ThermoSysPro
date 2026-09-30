@@ -1,25 +1,53 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestStaticPlateHeatExchanger
-  ThermoSysPro.Fluid.HeatExchangers.StaticPlateHeatExchanger echangeurAPlaques1(Sp = 2, Sc(Q(fixed = true, start = 1036.78)), region_c = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1, region_f = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.HeatExchangers.StaticPlateHeatExchanger echangeurAPlaques1(
+    redeclare package Medium_c = Medium,
+    redeclare package Medium_f = Medium,
+    Sp=2,
+    Sc(Q(fixed=true, start=1036.78)),
+    Hmc(start=220524.0),
+    Hmf(start=127690.0),
+    Qf(start=1000.0)) annotation(
     Placement(transformation(extent = {{-10, 30}, {10, 50}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP2(T0 = 340) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP2(
+                                           redeclare package Medium = Medium,
+                                           T0=340) annotation(
     Placement(transformation(extent = {{-70, 30}, {-50, 50}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP3 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP3 (
+                                            redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-50, 10}, {-30, 30}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP2(P0(fixed = false) = 100000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP2(
+      redeclare package Medium = Medium,
+      P0(fixed=false)=
+      100000) annotation(
     Placement(transformation(extent = {{50, 30}, {70, 50}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP3 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP3 (
+                                          redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{30, 10}, {50, 30}}, rotation = 0)));
-  ThermoSysPro.Fluid.HeatExchangers.StaticPlateHeatExchanger echangeurAPlaques(region_c = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1, region_f = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  ThermoSysPro.Fluid.HeatExchangers.StaticPlateHeatExchanger echangeurAPlaques(
+      redeclare package Medium_c = Medium,
+      redeclare package Medium_f = Medium,
+      Sp=2,
+    Hmc(start=220524.0),
+    Hmf(start=127690.0),
+    Qc(start=1000.0),
+    Qf(start=1000.0)) annotation(
     Placement(transformation(extent = {{-10, -34}, {10, -14}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP6(T0 = 340) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP6(
+                                           redeclare package Medium = Medium,
+                                           T0=340) annotation(
     Placement(transformation(extent = {{-70, -34}, {-50, -14}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP7 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP7 (
+                                            redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-50, -54}, {-30, -34}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP6 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP6 (
+                                         redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{50, -34}, {70, -14}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP7 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP7 (
+                                          redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{30, -54}, {50, -34}}, rotation = 0)));
 equation
   connect(sourceP2.C, echangeurAPlaques1.Ec) annotation(

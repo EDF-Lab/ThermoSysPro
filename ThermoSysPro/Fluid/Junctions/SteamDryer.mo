@@ -1,24 +1,33 @@
 within ThermoSysPro.Fluid.Junctions;
 
 model SteamDryer "Steam dryer"
-  extends ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.WaterSteamFluidTypeParameterInterface;
+
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType;
   import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
-  parameter Real eta = 1 "Steam dryer efficiency (0 <= eta <= 1)";
-  parameter Boolean continuous_flow_reversal = false "true: continuous flow reversal - false: discontinuous flow reversal";
-  parameter Boolean diffusion = false "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
-  parameter IF97Region region_e = IF97Region.All_regions "IF97 region at the inlet (active for IF97 water/steam only)" annotation(
-    Evaluate = true,
-    Dialog(enable = (ftype == FluidType.WaterSteam), tab = "Fluid", group = "Fluid properties"));
-  Units.SI.AbsolutePressure P(start = 10e5) "Fluid pressure";
-  Units.SI.SpecificEnthalpy h(start = 10e5) "Fluid specific enthalpy";
-  Real xe(start = 1.0) "Vapor mass fraction at the inlet";
-  FluidType fluids[4] "Fluids mixing in volume";
-  ThermoSysPro.Units.SI.MassFraction Xco2 "CO2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xh2o "H20 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xo2 "O2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xso2 "SO2 mass fraction";
+
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function SaS = Medium.noSaS(SubC = Cev.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
+  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Cev.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
+  parameter Real eta=1 "Steam dryer efficiency (0 <= eta <= 1)";
+  parameter Boolean continuous_flow_reversal=false
+    "true: continuous flow reversal - false: discontinuous flow reversal";
+  parameter Boolean diffusion=false
+    "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+  parameter IF97Region region_e=IF97Region.All_regions "IF97 region at the inlet (active for IF97 water/steam only)" annotation(Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
+
+protected
+  parameter Units.SI.MassFlowRate gamma0=1.e-4
+    "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
+  parameter Integer mode_e=Integer(region_e) - 1 "IF97 region at the inlet. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
+  Medium.C_BiPhase C_record;
+
+public
+  Units.SI.AbsolutePressure P(start=10e5) "Fluid pressure";
+  Units.SI.SpecificEnthalpy h(start=10e5) "Fluid specific enthalpy";
+  Units.SI.Density rho(start=1.0) "Fluid density at inlet";
+  Real xe(start=1.0) "Vapor mass fraction at the inlet";
+  Medium.MassFraction X[Medium.nXi](start=Medium.X_default[1:Medium.nXi]) "Fluid mass fraction";
+  Medium.ExtraProperty SubCSaS[Medium.nC](quantity=Medium.extraPropertiesNames) "Trace modification in the trace balance equation";
   Units.SI.Power Jev "Thermal power diffusion from inlet ev";
   Units.SI.Power Jsv "Thermal power diffusion from outlet sv";
   Units.SI.Power Jsl "Thermal power diffusion from outlet sl";
@@ -29,30 +38,20 @@ model SteamDryer "Steam dryer"
   Real rev "Value of r(Q/gamma) for inlet ev";
   Real rsv "Value of r(Q/gamma) for outlet sv";
   Real rsl "Value of r(Q/gamma) for outlet sl";
-  ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph proe annotation(
-    Placement(transformation(extent = {{-100, 80}, {-80, 100}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Cev annotation(
-    Placement(transformation(extent = {{-109, 30}, {-89, 50}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Csv annotation(
-    Placement(transformation(extent = {{89, 30}, {109, 50}}, rotation = 0)));
-  ThermoSysPro.Properties.WaterSteam.Common.PropThermoSat lsat1 annotation(
-    Placement(transformation(extent = {{-100, -98}, {-80, -78}}, rotation = 0)));
-  ThermoSysPro.Properties.WaterSteam.Common.PropThermoSat vsat1 annotation(
-    Placement(transformation(extent = {{-76, -98}, {-56, -78}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Csl annotation(
-    Placement(transformation(extent = {{-9, -110}, {11, -90}}, rotation = 0)));
-protected
-  parameter Units.SI.MassFlowRate gamma0 = 1.e-4 "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  parameter Integer mode_e = Integer(region_e) - 1 "IF97 region at the inlet. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
-  parameter Integer fluid = Integer(ftype) "Fluid number";
+
+public
+  Medium.SaturationProperties sat;
+  Medium.ThermodynamicState state_e;
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Cev(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{-109,30},{-89,50}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Csv(redeclare package Medium = Medium) annotation (
+      Placement(transformation(extent={{89,30},{109,50}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Csl(redeclare package Medium = Medium) annotation (
+      Placement(transformation(extent={{-9,-110},{11,-90}}, rotation=0)));
+
 equation
-/* Check that incoming fluids are compatible with fluid in volume */
-  fluids[1] = ftype;
-  fluids[2] = Cev.ftype;
-  fluids[3] = Csv.ftype;
-  fluids[4] = Csl.ftype;
-  assert(ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.isCompatible(fluids), "SteamDryer: fluids mixing in volume are not compatible with each other");
-/* Check that eta is between 0 and 1 */
+
+  /* Check that eta is between 0 and 1 */
   assert((eta >= 0) and (eta <= 1), "SteamDryer - Parameter eta should be >= 0 and <= 1");
 /* Mass flow at the vapor outlet */
   Csv.Q = noEvent(if (xe > 0) then Cev.Q*(1 - eta*(1 - xe)) else 0);
@@ -65,23 +64,23 @@ equation
   0 = Cev.Q*Cev.h - Csv.Q*Csv.h - Csl.Q*Csl.h + J;
   Cev.h_vol_2 = h;
   Csv.h_vol_1 = h;
-  Csl.h_vol_1 = noEvent(if (xe > 0) then lsat1.h else Cev.h);
-/* Fluid composition balance equations*/
-  0 = Cev.Xco2*Cev.Q - Csv.Xco2*Csv.Q - Csl.Xco2*Csl.Q;
-  0 = Cev.Xh2o*Cev.Q - Csv.Xh2o*Csv.Q - Csl.Xh2o*Csl.Q;
-  0 = Cev.Xo2*Cev.Q - Csv.Xo2*Csv.Q - Csl.Xo2*Csl.Q;
-  0 = Cev.Xso2*Cev.Q - Csv.Xso2*Csv.Q - Csl.Xso2*Csl.Q;
-  Csv.ftype = ftype;
-  Csl.ftype = ftype;
-  Csv.Xco2 = Xco2;
-  Csv.Xh2o = Xh2o;
-  Csv.Xo2 = Xo2;
-  Csv.Xso2 = Xso2;
-  Csl.Xco2 = Xco2;
-  Csl.Xh2o = Xh2o;
-  Csl.Xo2 = Xo2;
-  Csl.Xso2 = Xso2;
-/* Flow reversal */
+  Csl.h_vol_1 = noEvent(if (xe > 0) then Medium.bubbleEnthalpy(sat) else Cev.h);
+
+  /* Fluid composition balance equations*/
+  Cev.Xi*Cev.Q =  Csv.Xi*Csv.Q + Csl.Xi*Csl.Q;
+
+  Csv.Xi = X;
+  Csl.Xi = X;
+
+  /* Traces composition balance equations */
+  C_record = PhasesSeparationFunction();
+  Csv.SubC = C_record.Cg;
+
+  Csv.Q*Csv.SubC + Csl.Q*Csl.SubC = Cev.Q*Cev.SubC + SubCSaS * Cev.Q;
+
+  SubCSaS = SaS();
+
+  /* Flow reversal */
   if continuous_flow_reversal then
     Csv.h = ThermoSysPro.Functions.SmoothCond(Csv.Q/gamma_sv, Csv.h_vol_1, Csv.h_vol_2, 1);
     Csl.h = ThermoSysPro.Functions.SmoothCond(Csl.Q/gamma_sl, Csl.h_vol_1, Csl.h_vol_2, 1);
@@ -118,16 +117,41 @@ equation
   Cev.diff_on_2 = diffusion;
   Csv.diff_on_1 = diffusion;
   Csl.diff_on_1 = diffusion;
-/* Fluid thermodynamic properties */
-  proe = ThermoSysPro.Properties.Fluid.Ph(Cev.P, Cev.h, mode_e, fluid);
-/* Vapor mass fraction at the inlet */
-  xe = proe.x;
-/* Fluid thermodynamic properties at the saturation point */
-  (lsat1, vsat1) = ThermoSysPro.Properties.Fluid.Water_sat_P(Cev.P, fluid);
-  annotation(
-    Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Polygon(points = {{-98, 40}, {-18, -100}, {22, -100}, {102, 40}, {-98, 40}}, lineColor = {28, 108, 200}, fillColor = {255, 255, 0}, fillPattern = FillPattern.Solid)}),
-    Icon(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Polygon(points = {{-100, 40}, {-20, -100}, {20, -100}, {100, 40}, {-100, 40}}, lineColor = {0, 0, 0}, fillColor = DynamicSelect({255, 255, 0}, if diffusion then fill_color_singular else fill_color_static), fillPattern = FillPattern.Solid)}),
-    Window(x = 0.17, y = 0.1, width = 0.76, height = 0.76),
+
+  /* Fluid thermodynamic properties */
+  state_e=Medium.setState_phX(p=Cev.P, h=Cev.h, X=Cev.Xi, region=mode_e);
+  rho = state_e.d;
+
+  /* Vapor mass fraction at the inlet */
+  xe=Medium.vapourQuality(state_e);
+
+  /* Fluid thermodynamic properties at the saturation point */
+  sat = Medium.setSat_p(Cev.P);
+
+  annotation (
+    Diagram(coordinateSystem(
+        preserveAspectRatio=false,
+        extent={{-100,-100},{100,100}},
+        grid={2,2}), graphics={Polygon(
+          points={{-98,40},{-18,-100},{22,-100},{102,40},{-98,40}},
+          lineColor={28,108,200},
+          fillColor={255,255,0},
+          fillPattern=FillPattern.Solid)}),
+    Icon(coordinateSystem(
+        preserveAspectRatio=false,
+        extent={{-100,-100},{100,100}},
+        grid={2,2}), graphics={Polygon(
+          points={{-100,40},{-20,-100},{20,-100},{100,40},{-100,40}},
+          lineColor={0,0,0},
+          fillColor= DynamicSelect({255,255,0},
+          if diffusion then fill_color_singular
+          else fill_color_static),
+          fillPattern=FillPattern.Solid)}),
+    Window(
+      x=0.17,
+      y=0.1,
+      width=0.76,
+      height=0.76),
     Documentation(info = "
 ## Copyright © EDF 2002 - 2026   
 ## ThermoSysPro Version 4.2   

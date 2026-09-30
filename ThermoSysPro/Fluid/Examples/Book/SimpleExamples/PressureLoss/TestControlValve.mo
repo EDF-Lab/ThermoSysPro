@@ -1,11 +1,18 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.PressureLoss;
 
 model TestControlValve
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-64, -10}, {-44, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP1 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{44, -10}, {64, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValve(mode_caract = 1, caract = [0, 0; 0.5, 3000; 0.75, 7000; 1, 8000]) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValve(
+        redeclare package Medium = Medium,
+        mode_caract=1, caract=[
+        0,0; 0.5,3000; 0.75,7000; 1,8000]) annotation(
     Placement(transformation(extent = {{-10, -4}, {10, 16}}, rotation = 0)));
   InstrumentationAndControl.Blocks.Tables.Table1DTemps Constante1(Table = [0, 0.9; 5, 0.9; 15, 0.5; 25, 0.5; 50, 0.2; 100, 0.2]) annotation(
     Placement(transformation(extent = {{-30, 30}, {-10, 50}}, rotation = 0)));

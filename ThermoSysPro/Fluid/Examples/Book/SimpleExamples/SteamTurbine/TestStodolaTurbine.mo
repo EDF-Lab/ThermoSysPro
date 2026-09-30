@@ -1,11 +1,22 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.SteamTurbine;
 
 model TestStodolaTurbine
-  ThermoSysPro.Fluid.Machines.StodolaTurbine stodolaTurbine(Cst = 2e6, eta_is_nom = 0.94) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Machines.StodolaTurbine stodolaTurbine(
+      redeclare package Medium = Medium,
+      Cst=2e6,
+      eta_is_nom=0.94) annotation(
     Placement(transformation(extent = {{-10, -10}, {10, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP(P0 = 10000000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP(
+    redeclare package Medium = Medium,
+    P0=10000000) annotation(
     Placement(transformation(extent = {{30, -10}, {50, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(option_temperature = false, P0 = 27000000, h0 = 3475.e3) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    P0=27000000,
+    h0=3475.e3) annotation(
     Placement(transformation(extent = {{-50, -10}, {-30, 10}}, rotation = 0)));
 equation
   connect(sourceP.C, stodolaTurbine.Ce) annotation(

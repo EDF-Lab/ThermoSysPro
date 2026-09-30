@@ -1,23 +1,42 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.Volume;
 
 model TestVolumeATh
-  ThermoSysPro.Fluid.Volumes.VolumeATh volumeATh(h0 = 1.2e5, V = 1, P0 = 300000, P(start = 300000)) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Volumes.VolumeATh volumeATh(
+    redeclare package Medium = Medium,
+    h0=1.2e5,
+    V=1,
+    P0=300000,
+    P(start=300000)) annotation(
     Placement(transformation(extent = {{-15, 21}, {15, -9}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP sink(T0 = 320, option_temperature = false, h0 = 200000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP sink(
+    redeclare package Medium = Medium,
+    T0=320,
+    option_temperature=false,
+    h0=200000) annotation(
     Placement(transformation(extent = {{64, -4}, {84, 16}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve controlValve1(Cvmax = 80) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve controlValve1(
+    redeclare package Medium = Medium,
+    Cvmax=80) annotation(
     Placement(transformation(extent = {{-47, -58}, {-27, -38}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Rampe Rampe(Finalvalue = 0, Initialvalue = 1) annotation(
     Placement(transformation(extent = {{-89, -38}, {-73, -22}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve controlValve2 annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve controlValve2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{28, 2}, {48, 22}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceQ sourceQ annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceQ sourceQ (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-83, -6}, {-59, 18}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante Constant annotation(
     Placement(transformation(extent = {{10, 18}, {26, 34}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP2(option_temperature = false) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP2(
+      redeclare package Medium = Medium,
+      option_temperature=false) annotation(
     Placement(transformation(extent = {{-79, -64}, {-59, -44}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe1(L = 0.1, D = 1) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe1(
+     redeclare package Medium = Medium,
+     L=0.1, D=1) annotation(
     Placement(transformation(extent = {{-47, -4}, {-27, 16}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Tables.Table1DTemps Table1DTemps(Table = [0, 10; 5, -10; 8, 0; 9, 0]) annotation(
     Placement(transformation(extent = {{-93, 16}, {-73, 36}}, rotation = 0)));

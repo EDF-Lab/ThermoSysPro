@@ -2,16 +2,26 @@ within ThermoSysPro.Fluid.BoundaryConditions;
 
 model RefQ "Fixed mass flow reference"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  parameter Units.SI.MassFlowRate Q0 = 10 "Fixed fluid mass flow";
+ replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+
+
+  parameter Units.SI.MassFlowRate Q0=10 "Fixed fluid mass flow";
+
+public
   Units.SI.MassFlowRate Q "Fluid mass flow rate";
   Units.SI.AbsolutePressure P "Fluid pressure";
   Units.SI.SpecificEnthalpy h "Fluid specific enthalpy";
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet C1 annotation(
-    Placement(transformation(extent = {{-110, -10}, {-90, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet C2 annotation(
-    Placement(transformation(extent = {{90, -10}, {110, 10}}, rotation = 0)));
-  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal IMassFlow annotation(
-    Placement(transformation(origin = {0, 110}, extent = {{-10, -10}, {10, 10}}, rotation = 270)));
+
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet C1(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{-110,-10},{-90,10}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet C2(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{90,-10},{110,10}}, rotation=0)));
+  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal IMassFlow
+    annotation (Placement(transformation(
+        origin={0,110},
+        extent={{-10,-10},{10,10}},
+        rotation=270)));
+
 equation
   if (cardinality(IMassFlow) == 0) then
     IMassFlow.signal = Q0;
@@ -25,11 +35,11 @@ equation
   C1.diff_on_2 = C2.diff_on_2;
   C2.diff_res_1 = C1.diff_res_1;
   C1.diff_res_2 = C2.diff_res_2;
-  C1.ftype = C2.ftype;
-  C1.Xco2 = C2.Xco2;
-  C1.Xh2o = C2.Xh2o;
-  C1.Xo2 = C2.Xo2;
-  C1.Xso2 = C2.Xso2;
+
+  C1.Xi = C2.Xi;
+
+  C1.SubC = C2.SubC;
+
   Q = C1.Q;
   P = C1.P;
   h = C1.h;

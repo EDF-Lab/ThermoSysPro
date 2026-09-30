@@ -1,11 +1,29 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestDynamicOnePhaseFlowShell
-  ThermoSysPro.Fluid.HeatExchangers.DynamicOnePhaseFlowShell dynamicOnePhaseFlowPipeShell(Q(start = {30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30}), Ds = 1, ntubes = 520, L = 12, P(start = {2000000, 1996000, 1993000, 1990000, 1986000, 1983000, 1980000, 1976000, 1973000, 1965000, 1955000, 1950000})) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.HeatExchangers.DynamicOnePhaseFlowShell dynamicOnePhaseFlowPipeShell(
+    redeclare package Medium = Medium,
+    inertia=false,
+    Q(start={30,30,30,30,30,30,30,30,30,30,30}),
+    Ds=1,
+    ntubes=520,
+    L=12,
+    P(start={2000000,1996000,1993000,1990000,1986000,1983000,1980000,1976000,
+          1973000,1965000,1955000,1950000})) annotation(
     Placement(transformation(extent = {{-48, -36}, {48, 36}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP(option_temperature = false, P0(fixed = false) = 1900000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP(
+         redeclare package Medium = Medium,
+         option_temperature=false,
+         P0=1900000) annotation(
     Placement(transformation(extent = {{74, -15}, {102, 15}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(option_temperature = false, h0 = 600e3, Q(start = 500, fixed = true), P0 = 2000000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    h0=600e3,
+    Q(start=500, fixed=false),
+    P0=2000000) annotation(
     Placement(transformation(extent = {{-103, -15}, {-75, 15}}, rotation = 0)));
   ThermoSysPro.Thermal.HeatTransfer.HeatExchangerWall heatExchangerWall(lambda = 10, Ns = 10, cpw = 460, rhow = 7900, D = 0.017, e = 0.002, ntubes = 520, L = 12) annotation(
     Placement(transformation(extent = {{-54, 30}, {54, 58}}, rotation = 0)));

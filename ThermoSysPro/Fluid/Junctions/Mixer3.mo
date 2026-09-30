@@ -1,25 +1,23 @@
 within ThermoSysPro.Fluid.Junctions;
 
 model Mixer3 "Mixer with three inlets"
-  extends ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidTypeParameterInterface;
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
-  parameter Boolean continuous_flow_reversal = false "true: continuous flow reversal - false: discontinuous flow reversal";
-  parameter Boolean diffusion = false "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
-  parameter IF97Region region = IF97Region.All_regions "IF97 region (active for IF97 water/steam only)" annotation(
-    Evaluate = true,
-    Dialog(enable = (ftype == FluidType.WaterSteam), tab = "Fluid", group = "Fluid properties"));
+ replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  parameter Boolean continuous_flow_reversal=false
+    "true: continuous flow reversal - false: discontinuous flow reversal";
+  parameter Boolean diffusion=false
+    "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+
+protected
+  parameter Units.SI.MassFlowRate gamma0=1.e-4
+    "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
+
+public
   Real alpha1 "Extraction coefficient for inlet 1 (<=1)";
   Real alpha2 "Extraction coefficient for inlet 2 (<=1)";
   Units.SI.AbsolutePressure P(start = 10e5) "Fluid pressure";
   Units.SI.SpecificEnthalpy h(start = 10e5) "Fluid specific enthalpy";
   Units.SI.Temperature T "Fluid temperature";
-  FluidType fluids[5] "Fluids mixing in volume";
-  ThermoSysPro.Units.SI.MassFraction Xco2 "CO2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xh2o "H20 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xo2 "O2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xso2 "SO2 mass fraction";
   Units.SI.Power Je1 "Thermal power diffusion from inlet e1";
   Units.SI.Power Je2 "Thermal power diffusion from inlet e2";
   Units.SI.Power Je3 "Thermal power diffusion from inlet e3";
@@ -33,34 +31,19 @@ model Mixer3 "Mixer with three inlets"
   Real re2 "Value of r(Q/gamma) for inlet e2";
   Real re3 "Value of r(Q/gamma) for inlet e3";
   Real rs "Value of r(Q/gamma) for outlet s";
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce2 annotation(
-    Placement(transformation(extent = {{-50, -110}, {-30, -90}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Cs annotation(
-    Placement(transformation(extent = {{90, -10}, {110, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce1 annotation(
-    Placement(transformation(extent = {{-50, 90}, {-30, 110}}, rotation = 0)));
-  InstrumentationAndControl.Connectors.InputReal Ialpha1 "Extraction coefficient for inlet 1 (<=1)" annotation(
-    Placement(transformation(extent = {{-80, 50}, {-60, 70}}, rotation = 0)));
-  InstrumentationAndControl.Connectors.OutputReal Oalpha1 annotation(
-    Placement(transformation(extent = {{-20, 50}, {0, 70}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce3 annotation(
-    Placement(transformation(extent = {{-110, -10}, {-90, 10}}, rotation = 0)));
-  InstrumentationAndControl.Connectors.InputReal Ialpha2 "Extraction coefficient for inlet 2 (<=1)" annotation(
-    Placement(transformation(extent = {{-80, -70}, {-60, -50}}, rotation = 0)));
-  InstrumentationAndControl.Connectors.OutputReal Oalpha2 annotation(
-    Placement(transformation(extent = {{-20, -70}, {0, -50}}, rotation = 0)));
-protected
-  parameter Units.SI.MassFlowRate gamma0 = 1.e-4 "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  parameter Integer mode = Integer(region) - 1 "IF97 region. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
+
+public
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce2(redeclare package Medium = Medium) annotation (Placement(transformation(extent={{-50,-110},{-30,-90}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Cs(redeclare package Medium = Medium) annotation (Placement(transformation(extent={{90,-10},{110,10}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce1(redeclare package Medium = Medium) annotation (Placement(transformation(extent={{-50,90},{-30,110}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce3(redeclare package Medium = Medium) annotation (Placement(transformation(extent={{-110,-10},{-90,10}}, rotation=0)));
+  InstrumentationAndControl.Connectors.InputReal Ialpha1 "Extraction coefficient for inlet 1 (<=1)" annotation (Placement(transformation(extent={{-80,50},{-60,70}}, rotation=0)));
+  InstrumentationAndControl.Connectors.OutputReal Oalpha1 annotation (Placement(transformation(extent={{-20,50},{0,70}}, rotation=0)));
+  InstrumentationAndControl.Connectors.InputReal Ialpha2 "Extraction coefficient for inlet 2 (<=1)" annotation (Placement(transformation(extent={{-80,-70},{-60,-50}}, rotation=0)));
+  InstrumentationAndControl.Connectors.OutputReal Oalpha2 annotation (Placement(transformation(extent={{-20,-70},{0,-50}}, rotation=0)));
 equation
-/* Check that incoming fluids are compatible with fluid in volume */
-  fluids[1] = ftype;
-  fluids[2] = Ce1.ftype;
-  fluids[3] = Ce2.ftype;
-  fluids[4] = Ce3.ftype;
-  fluids[5] = Cs.ftype;
-  assert(ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.isCompatible(fluids), "Mixer3: fluids mixing in volume are not compatible with each other");
-/* Unconnected connectors */
+
+  /* Unconnected connectors */
   if (cardinality(Ialpha1) == 0) then
     Ialpha1.signal = 0.3;
   end if;
@@ -70,6 +53,7 @@ equation
 /* Mass balance equation */
   0 = Ce1.Q + Ce2.Q + Ce3.Q - Cs.Q;
   P = Ce1.P;
+
   P = Ce2.P;
   P = Ce3.P;
   P = Cs.P;
@@ -90,17 +74,13 @@ equation
   Oalpha1.signal = alpha1;
   alpha2 = if noEvent(abs(Cs.Q) > 0) then Ce2.Q/Cs.Q else Modelica.Constants.inf;
   Oalpha2.signal = alpha2;
-/* Fluid composition balance equations */
-  0 = Ce1.Xco2*Ce1.Q + Ce2.Xco2*Ce2.Q + Ce3.Xco2*Ce3.Q - Cs.Xco2*Cs.Q;
-  0 = Ce1.Xh2o*Ce1.Q + Ce2.Xh2o*Ce2.Q + Ce3.Xh2o*Ce3.Q - Cs.Xh2o*Cs.Q;
-  0 = Ce1.Xo2*Ce1.Q + Ce2.Xo2*Ce2.Q + Ce3.Xo2*Ce3.Q - Cs.Xo2*Cs.Q;
-  0 = Ce1.Xso2*Ce1.Q + Ce2.Xso2*Ce2.Q + Ce3.Xso2*Ce3.Q - Cs.Xso2*Cs.Q;
-  Cs.ftype = ftype;
-  Cs.Xco2 = Xco2;
-  Cs.Xh2o = Xh2o;
-  Cs.Xo2 = Xo2;
-  Cs.Xso2 = Xso2;
-/* Flow reversal */
+
+  /* Fluid composition balance equations */
+  Cs.Xi*Cs.Q = Ce1.Xi*Ce1.Q + Ce2.Xi*Ce2.Q + Ce3.Xi*Ce3.Q;
+
+  Cs.SubC*Cs.Q = Ce1.SubC*Ce1.Q + Ce2.SubC*Ce2.Q + Ce3.SubC*Ce3.Q;
+
+  /* Flow reversal */
   if continuous_flow_reversal then
     Cs.h = ThermoSysPro.Functions.SmoothCond(Cs.Q/gamma_s, Cs.h_vol_1, Cs.h_vol_2, 1);
   else
@@ -143,12 +123,48 @@ equation
   Ce2.diff_on_2 = diffusion;
   Ce3.diff_on_2 = diffusion;
   Cs.diff_on_1 = diffusion;
-/* Fluid thermodynamic properties */
-  T = ThermoSysPro.Properties.Fluid.Temperature_Ph(P, h, fluid, mode, Cs.Xco2, Cs.Xh2o, Cs.Xo2, Cs.Xso2);
-  annotation(
-    Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Polygon(points = {{-60, 100}, {-20, 100}, {-20, 20}, {100, 20}, {100, -20}, {-20, -20}, {-20, -100}, {-60, -100}, {-60, -20}, {-100, -20}, {-100, 20}, {-60, 20}, {-60, 100}}, lineColor = {0, 0, 255}, fillColor = {255, 255, 0}, fillPattern = FillPattern.Solid), Text(extent = {{-60, 80}, {-20, 40}}, textString = "1"), Text(extent = {{-60, -40}, {-20, -80}}, textString = "2")}),
-    Icon(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Polygon(points = {{-60, 100}, {-20, 100}, {-20, 20}, {100, 20}, {100, -20}, {-20, -20}, {-20, -100}, {-60, -100}, {-60, -20}, {-100, -20}, {-100, 20}, {-60, 20}, {-60, 100}}, lineColor = {0, 0, 0}, fillColor = DynamicSelect({255, 255, 0}, if diffusion then fill_color_singular else fill_color_static), fillPattern = FillPattern.Solid), Text(extent = {{-50, 88}, {-32, 72}}, textString = "1"), Text(extent = {{-54, -72}, {-26, -88}}, textString = "2")}),
-    Window(x = 0.33, y = 0.09, width = 0.71, height = 0.88),
+
+  /* Fluid thermodynamic properties */
+  T = Medium.temperature_phX(P, h, Cs.Xi);
+
+  annotation (
+    Diagram(coordinateSystem(
+        preserveAspectRatio=false,
+        extent={{-100,-100},{100,100}},
+        grid={2,2}), graphics={
+        Polygon(
+          points={{-60,100},{-20,100},{-20,20},{100,20},{100,-20},{-20,-20},{
+              -20,-100},{-60,-100},{-60,-20},{-100,-20},{-100,20},{-60,20},{-60,
+              100}},
+          lineColor={0,0,255},
+          fillColor={255,255,0},
+          fillPattern=FillPattern.Solid),
+        Text(extent={{-60,80},{-20,40}}, textString=
+                                     "1"),
+        Text(extent={{-60,-40},{-20,-80}}, textString=
+                             "2")}),
+    Icon(coordinateSystem(
+        preserveAspectRatio=false,
+        extent={{-100,-100},{100,100}},
+        grid={2,2}), graphics={
+        Polygon(
+          points={{-60,100},{-20,100},{-20,20},{100,20},{100,-20},{-20,-20},{
+              -20,-100},{-60,-100},{-60,-20},{-100,-20},{-100,20},{-60,20},{-60,
+              100}},
+          lineColor={0,0,0},
+          fillColor= DynamicSelect({255,255,0},
+          if diffusion then fill_color_singular
+          else fill_color_static),
+          fillPattern=FillPattern.Solid),
+        Text(extent={{-50,88},{-32,72}}, textString=
+                                     "1"),
+        Text(extent={{-54,-72},{-26,-88}}, textString=
+                             "2")}),
+    Window(
+      x=0.33,
+      y=0.09,
+      width=0.71,
+      height=0.88),
     Documentation(info = "
 ## Copyright © EDF 2002 - 2026   
 ## ThermoSysPro Version 4.2   

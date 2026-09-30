@@ -1,15 +1,29 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.CentrifugalPump.TestCentrifugalPump;
 
 model Scenario_3
-  ThermoSysPro.Fluid.Machines.CentrifugalPump centrifugalPump(hn_nom_p = 10, mode_car = 1, V = 0.01, dynamic_energy_balance = false, mode_car_Cr = 1, mode_car_hn = 1) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Machines.CentrifugalPump centrifugalPump(
+    redeclare package Medium = Medium,
+    hn_nom_p=10,
+    mode_car=1,
+    V=0.01,
+    dynamic_energy_balance=false,
+    mode_car_Cr=1,
+    mode_car_hn=1) annotation(
     Placement(transformation(extent = {{-20, 20}, {0, 40}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(P0 = 300000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(
+    redeclare package Medium = Medium,
+    P0=300000) annotation(
     Placement(transformation(extent = {{-60, 20}, {-40, 40}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{60, 20}, {80, 40}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Rampe rampe2(Duration = 100, Starttime = 100, Finalvalue = 4800000, Initialvalue = 400000) annotation(
     Placement(transformation(extent = {{0, 60}, {20, 80}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(lambda = 0, inertia = true) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(
+      redeclare package Medium = Medium,
+      lambda=0, inertia=true) annotation(
     Placement(transformation(extent = {{20, 20}, {40, 40}}, rotation = 0)));
 equation
   connect(sourceP.C, centrifugalPump.C1) annotation(
