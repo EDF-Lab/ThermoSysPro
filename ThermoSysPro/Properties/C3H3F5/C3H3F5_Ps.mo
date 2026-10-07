@@ -18,6 +18,12 @@ protected
   Real A;
   Real B;
   Real C;
+  Real dhds "Derivative of h wrt. s at constant P (K)";
+  Real dhdp "Derivative of h wrt. P at constant s (m3/kg)";
+  Real dssatL "Derivative of ssatL wrt. Pcalc";
+  Real dssatV "Derivative of ssatV wrt. Pcalc";
+  Real dhsatL "Derivative of hsatL wrt. Pcalc";
+  Real dhsatV "Derivative of hsatV wrt. Pcalc";
 protected
   ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph pro annotation(
     Placement(transformation(extent = {{-60, 80}, {-40, 100}}, rotation = 0)));
@@ -44,17 +50,28 @@ algorithm
   hsatL := -0.0000039275*Pcalc^6 + 0.0004780040*Pcalc^5 - 0.0227439765*Pcalc^4 + 0.5370471515*Pcalc^3 - 6.6496487588*Pcalc^2 + 46.8685173786*Pcalc + 166.7823742593;
   ssatV := 0.0000000017*Pcalc^6 - 0.0000002159*Pcalc^5 + 0.0000102230*Pcalc^4 - 0.0002295813*Pcalc^3 + 0.0023692545*Pcalc^2 - 0.0062966866*Pcalc + 1.7667560947;
   ssatL := -0.0000000164*Pcalc^6 + 0.0000019814*Pcalc^5 - 0.0000934768*Pcalc^4 + 0.0021827510*Pcalc^3 - 0.0265228817*Pcalc^2 + 0.1740890297*Pcalc + 0.8685336198;
+/* Derivatives of the saturation polynomials wrt. Pcalc */
+  dhsatV := -6*0.00000274*Pcalc^5 + 5*0.00032217*Pcalc^4 - 4*0.01489673*Pcalc^3 + 3*0.34258030*Pcalc^2 - 2*4.15381744*Pcalc + 27.64876596;
+  dhsatL := -6*0.0000039275*Pcalc^5 + 5*0.0004780040*Pcalc^4 - 4*0.0227439765*Pcalc^3 + 3*0.5370471515*Pcalc^2 - 2*6.6496487588*Pcalc + 46.8685173786;
+  dssatV := 6*0.0000000017*Pcalc^5 - 5*0.0000002159*Pcalc^4 + 4*0.0000102230*Pcalc^3 - 3*0.0002295813*Pcalc^2 + 2*0.0023692545*Pcalc - 0.0062966866;
+  dssatL := -6*0.0000000164*Pcalc^5 + 5*0.0000019814*Pcalc^4 - 4*0.0000934768*Pcalc^3 + 3*0.0021827510*Pcalc^2 - 2*0.0265228817*Pcalc + 0.1740890297;
 /* Determination of the property zone (liquid, two-phase or steam) and compuation of the properties */
   if ((scalc >= ssatL) and (scalc <= ssatV)) then
 /* Two-phase zone */
     x := (scalc - ssatL)/(ssatV - ssatL);
     h := 1000*(hsatL*(1 - x) + hsatV*x);
+    dhds := (hsatV - hsatL)/(ssatV - ssatL);
+    dhdp := 1000*(dhsatL*(1 - x) + dhsatV*x - (hsatV - hsatL)*(dssatL + x*(dssatV - dssatL))/(ssatV - ssatL))/100000;
   elseif (scalc < ssatL) then
 /* Liquid zone */
     x := 0;
     h := 1000*(112.482*scalc^2 + 50.525*scalc + 39.292);
+    dhds := 2*112.482*scalc + 50.525;
+    dhdp := 0;
     if (h > hsatL) then
       h := 1000*hsatL;
+      dhds := 0;
+      dhdp := 1000*dhsatL/100000;
     end if;
   else
 /* Steam zone */
@@ -63,8 +80,12 @@ algorithm
     B := -0.1114991*Pcalc^2 + 12.8417980*Pcalc - 415.1029137;
     C := 0.1219352*Pcalc^2 - 13.8031170*Pcalc + 540.5578010;
     h := 1000*(A*scalc^2 + B*scalc + C);
+    dhds := 2*A*scalc + B;
+    dhdp := 1000*((-2*0.0396219*Pcalc + 0.2873498)*scalc^2 + (-2*0.1114991*Pcalc + 12.8417980)*scalc + 2*0.1219352*Pcalc - 13.8031170)/100000;
     if (h < hsatV) then
       h := 1000*hsatV;
+      dhds := 0;
+      dhdp := 1000*dhsatV/100000;
     end if;
   end if;
   pro := C3H3F5_Ph(P, h);
@@ -74,6 +95,9 @@ algorithm
   props.h := h;
   props.cp := pro.cp;
   props.x := x;
+/* ddsp and ddps were not assigned: chain rule on d(P, h(P, s)) with the polynomials above */
+  props.ddsp := pro.ddhp*dhds;
+  props.ddps := pro.ddph + pro.ddhp*dhdp;
   annotation(
     smoothOrder = 2,
     Documentation(info = "

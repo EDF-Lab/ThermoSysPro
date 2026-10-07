@@ -26,6 +26,16 @@ protected
   Real A3;
   Real B3;
   Real C3;
+  Real dhsatL "Derivative of hsatL wrt. Pcalc (kJ/kg/bar)";
+  Real dhsatV "Derivative of hsatV wrt. Pcalc (kJ/kg/bar)";
+  Real drhoSatL "Derivative of rhoSatL wrt. Pcalc (kg/m3/bar)";
+  Real drhoSatV "Derivative of rhoSatV wrt. Pcalc (kg/m3/bar)";
+  Real dxdh "Derivative of x wrt. hcalc (1/(kJ/kg))";
+  Real dxdp "Derivative of x wrt. Pcalc (1/bar)";
+  Real dddh "Derivative of the density wrt. hcalc at constant Pcalc (kg/m3/(kJ/kg))";
+  Real dddp "Derivative of the density wrt. Pcalc at constant hcalc (kg/m3/bar)";
+  Units.SI.SpecificHeatCapacity cpL "Specific heat capacity of the saturated liquid";
+  Units.SI.SpecificHeatCapacity cpV "Specific heat capacity of the saturated vapour";
 algorithm
 /* Critical pressure */
   Psc := 3640000;
@@ -52,6 +62,14 @@ algorithm
   rhoSatL := 0.0000057803*Pcalc^6 - 0.0007528646*Pcalc^5 + 0.0377373800*Pcalc^4 - 0.9314090824*Pcalc^3 + 11.9184348938*Pcalc^2 - 89.9582798898*Pcalc + 1467.5902188299;
   rhoSatV := 0.00000207*Pcalc^6 - 0.00019163*Pcalc^5 + 0.00675913*Pcalc^4 - 0.10924667*Pcalc^3 + 0.84661954*Pcalc^2 + 2.83415571*Pcalc + 2.12959146;
   Tsat := -0.0000033655*Pcalc^6 + 0.0004044854*Pcalc^5 - 0.0190328128*Pcalc^4 + 0.4443722095*Pcalc^3 - 5.4337547883*Pcalc^2 + 36.7572359309*Pcalc + 246.4280421048;
+/* Derivatives of the saturation polynomials wrt. Pcalc */
+  dhsatV := -6*0.00000274*Pcalc^5 + 5*0.00032217*Pcalc^4 - 4*0.01489673*Pcalc^3 + 3*0.34258030*Pcalc^2 - 2*4.15381744*Pcalc + 27.64876596;
+  dhsatL := -6*0.0000039275*Pcalc^5 + 5*0.0004780040*Pcalc^4 - 4*0.0227439765*Pcalc^3 + 3*0.5370471515*Pcalc^2 - 2*6.6496487588*Pcalc + 46.8685173786;
+  drhoSatL := 6*0.0000057803*Pcalc^5 - 5*0.0007528646*Pcalc^4 + 4*0.0377373800*Pcalc^3 - 3*0.9314090824*Pcalc^2 + 2*11.9184348938*Pcalc - 89.9582798898;
+  drhoSatV := 6*0.00000207*Pcalc^5 - 5*0.00019163*Pcalc^4 + 4*0.00675913*Pcalc^3 - 3*0.10924667*Pcalc^2 + 2*0.84661954*Pcalc + 2.83415571;
+/* Coefficients of the steam temperature polynomial (also used for cp of the saturated vapour) */
+  A1 := 0.0000698*Pcalc - 0.0008618;
+  B1 := -0.0858201*Pcalc + 1.8849272;
 /* Determination of the property zone (liquid, two-phase or steam) and compuation of the properties */
   if ((hcalc >= hsatL) and (hcalc <= hsatV)) then
 /* Two-phase zone */
@@ -59,6 +77,14 @@ algorithm
     pro.x := (hcalc - hsatL)/(hsatV - hsatL);
     pro.d := rhoSatL*(1 - pro.x) + rhoSatV*pro.x;
     pro.s := ssatL*(1 - pro.x) + ssatV*pro.x;
+    dxdh := 1/(hsatV - hsatL);
+    dxdp := -(dhsatL + pro.x*(dhsatV - dhsatL))/(hsatV - hsatL);
+    dddh := (rhoSatV - rhoSatL)*dxdh;
+    dddp := drhoSatL*(1 - pro.x) + drhoSatV*pro.x + (rhoSatV - rhoSatL)*dxdp;
+    // cp of the saturated liquid and vapour, mixed as in WaterSteam.Common.water_ph_r4
+    cpL := 1000/(-2*0.0005311*hsatL + 0.9990391);
+    cpV := 1000/(2*A1*hsatV + B1);
+    pro.cp := (1 - pro.x)*cpL + pro.x*cpV;
   elseif (hcalc < hsatL) then
 /* Liquid zone */
     pro.T := -0.0005311*hcalc^2 + 0.9990391*hcalc + 93.9602333;
@@ -66,9 +92,15 @@ algorithm
       pro.T := Tsat;
     end if;
     pro.x := 0;
+    // cp = (dh/dT)_p = 1/(dT/dh)_p from the temperature polynomial (hcalc in kJ/kg)
+    pro.cp := 1000/(-2*0.0005311*hcalc + 0.9990391);
     pro.d := -0.0000154*hcalc^3 + 0.0095634*hcalc^2 - 3.8184877*hcalc + 1916.6958695;
+    dddh := -3*0.0000154*hcalc^2 + 2*0.0095634*hcalc - 3.8184877;
+    dddp := 0;
     if (pro.d < rhoSatL) then
       pro.d := rhoSatL;
+      dddh := 0;
+      dddp := drhoSatL;
     end if;
     pro.s := 1000*(-0.0000037*hcalc^2 + 0.0051600*hcalc + 0.1002293);
     if (pro.s > ssatL) then
@@ -76,21 +108,25 @@ algorithm
     end if;
   else
 /* Steam zone */
-    A1 := 0.0000698*Pcalc - 0.0008618;
-    B1 := -0.0858201*Pcalc + 1.8849272;
     C1 := 27.0570743*Pcalc - 353.7594967;
     pro.T := A1*hcalc^2 + B1*hcalc + C1;
     if (pro.T < Tsat) then
       pro.T := Tsat;
     end if;
     pro.x := 1;
+    // cp = (dh/dT)_p = 1/(dT/dh)_p from the temperature polynomial (hcalc in kJ/kg)
+    pro.cp := 1000/(2*A1*hcalc + B1);
     A2 := -0.0000000958*Pcalc^2 + 0.0000006742*Pcalc - 0.0000002691;
     B2 := 0.0001689*Pcalc^2 - 0.0011644*Pcalc + 0.0004690;
     C2 := -0.0995131*Pcalc^2 + 0.6639841*Pcalc - 0.2724718;
     D2 := 19.6224804*Pcalc^2 - 121.4944333*Pcalc + 52.8361115;
     pro.d := A2*hcalc^3 + B2*hcalc^2 + C2*hcalc + D2;
+    dddh := 3*A2*hcalc^2 + 2*B2*hcalc + C2;
+    dddp := (-2*0.0000000958*Pcalc + 0.0000006742)*hcalc^3 + (2*0.0001689*Pcalc - 0.0011644)*hcalc^2 + (-2*0.0995131*Pcalc + 0.6639841)*hcalc + 2*19.6224804*Pcalc - 121.4944333;
     if (pro.d > rhoSatV) then
       pro.d := rhoSatV;
+      dddh := 0;
+      dddp := drhoSatV;
     end if;
     A3 := -0.0000000032*Pcalc^2 + 0.0000001779*Pcalc - 0.0000037134;
     B3 := 0.0000034*Pcalc^2 - 0.0001957*Pcalc + 0.0064718;
@@ -100,6 +136,14 @@ algorithm
       pro.s := ssatV;
     end if;
   end if;
+/* Fields of ThermoProperties_ph that were not assigned (u, cp above, ddhp, ddph, duph, duhp).
+   ddhp and ddph are the derivatives of the density polynomials (hcalc in kJ/kg, Pcalc in bar);
+   duph and duhp follow from u = h - P/d, as in WaterSteam.Common.gibbsToProps_ph */
+  pro.ddhp := dddh/1000;
+  pro.ddph := dddp/100000;
+  pro.u := h - P/pro.d;
+  pro.duph := -1/pro.d + P/(pro.d*pro.d)*pro.ddph;
+  pro.duhp := 1 + P/(pro.d*pro.d)*pro.ddhp;
   annotation(
     smoothOrder = 2,
     Documentation(info = "
