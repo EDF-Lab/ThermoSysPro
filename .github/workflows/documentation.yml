@@ -1,0 +1,96 @@
+# Generate Markdown from the Modelica annotations of ThermoSysPro
+# (.documentation/mo_to_book.py), build the Jupyter Book, and deploy it to
+# GitHub Pages.
+#
+#   - Push to master, or manual run on master: the book is built and deployed.
+#   - Pull request: the book is built and, TEMPORARILY (while this workflow is
+#     being developed), also deployed, replacing the master documentation
+#     until the next deployment. Pull requests from forks are not deployed
+#     (no write access).
+#     TODO: once the workflow is validated, deploy master only: change the two
+#     DEPLOY conditions below, and restrict again the deployment branches of
+#     the github-pages environment to master.
+#
+# Required repository settings:
+#   - Settings > Pages > Build and deployment > Source: GitHub Actions.
+#   - TODO temporary, while pull requests are deployed: Settings > Environments
+#     > github-pages > Deployment branches and tags: allow all branches (by
+#     default only the default branch can deploy, and pull requests are
+#     rejected).
+#   - variable OPENMODELICA_IMAGE (optional): OpenModelica Docker image.
+
+name: Documentation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ vars.OPENMODELICA_IMAGE || 'openmodelica/openmodelica:v1.26.7-ompython' }}
+    steps:
+      # python3-venv is used to avoid installing Python packages as root.
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates python3-venv
+
+      - name: Checkout ThermoSysPro
+        uses: actions/checkout@v4
+
+      # Docker jobs run as root. OpenModelica refuses to start its ZMQ server
+      # as root, and omc4py needs that server, so the documentation is
+      # generated as ciuser.
+      - name: Install Python dependencies
+        run: |
+          useradd --create-home --shell /bin/bash ciuser
+          chown -R ciuser:ciuser "$GITHUB_WORKSPACE"
+          su ciuser -c "python3 -m venv ~/venv && . ~/venv/bin/activate && python -m pip install --upgrade pip && python -m pip install -r '$GITHUB_WORKSPACE/.documentation/requirements.txt'"
+
+      # Fail early, with a clear message, if the library cannot be loaded.
+      - name: Check that OpenModelica loads ThermoSysPro
+        run: |
+          omc --version
+          su ciuser -c ". ~/venv/bin/activate && cd '$GITHUB_WORKSPACE' && python3 -c 'import omc4py; omc = omc4py.open_session(); print(omc.getVersion()); assert omc.loadFile(\"ThermoSysPro/package.mo\"); print(\"Loaded ThermoSysPro with\", len(omc.getClassNames(\"ThermoSysPro\")), \"top-level classes\"); omc.close()'"
+
+      - name: Build the book
+        run: su ciuser -c ". ~/venv/bin/activate && cd '$GITHUB_WORKSPACE/.documentation' && python3 mo_to_book.py && jupyter-book build ."
+
+      # DEPLOY condition. TODO: temporary, pull requests are deployed while this
+      # workflow is developed. Once validated, deploy master only:
+      #   if: github.ref == 'refs/heads/master'
+      - name: Upload GitHub Pages artifact
+        if: github.event.pull_request.head.repo.full_name == github.repository || github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .documentation/_build/html
+
+  deploy:
+    needs: build
+    # DEPLOY condition. TODO: temporary, pull requests are deployed while this
+    # workflow is developed. Once validated, deploy master only:
+    #   if: github.ref == 'refs/heads/master'
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
