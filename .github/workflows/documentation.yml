@@ -68,9 +68,6 @@ jobs:
       - name: Build the book
         run: su ciuser -c ". ~/venv/bin/activate && cd '$GITHUB_WORKSPACE/.documentation' && python3 mo_to_book.py && jupyter-book build ."
 
-      # DEPLOY condition. TODO: temporary, pull requests are deployed while this
-      # workflow is developed. Once validated, deploy master only:
-      #   if: github.ref == 'refs/heads/master'
       - name: Upload GitHub Pages artifact
         if: github.event.pull_request.head.repo.full_name == github.repository || github.ref == 'refs/heads/master'
         uses: actions/upload-pages-artifact@v3
@@ -79,10 +76,8 @@ jobs:
 
   deploy:
     needs: build
-    # DEPLOY condition. TODO: temporary, pull requests are deployed while this
-    # workflow is developed. Once validated, deploy master only:
-    #   if: github.ref == 'refs/heads/master'
-    if: github.event.pull_request.head.repo.full_name == github.repository || github.ref == 'refs/heads/master'
+    # DEPLOY condition. Once validated, deploy master only:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       pages: write
