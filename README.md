@@ -8,8 +8,9 @@ ThermoSysPro has been historically designed for the modeling and simulation of t
 
 ## Current release and Compatibilities
 
-Current release of ThermoSysPro is ![GitLab Release](https://img.shields.io/gitlab/v/release/thermosysproandco%2FThermoSysPro?gitlab_url=https%3A%2F%2Fgitlab.pam-retd.fr). \
-It is developed on Dymola. OpenModelica can also be used as the simulation environment. 
+Current release of ThermoSysPro is [![GitHub Release](https://img.shields.io/github/v/release/EDF-Lab/ThermoSysPro)](https://github.com/EDF-Lab/ThermoSysPro/releases). \
+It is developed on Dymola. OpenModelica can also be used as the simulation environment. \
+[![OpenModelica tests](https://github.com/EDF-Lab/ThermoSysPro/actions/workflows/openmodelica-tests.yml/badge.svg?branch=develop)](https://github.com/EDF-Lab/ThermoSysPro/actions/workflows/openmodelica-tests.yml) [![Documentation](https://github.com/EDF-Lab/ThermoSysPro/actions/workflows/documentation.yml/badge.svg)](https://github.com/EDF-Lab/ThermoSysPro/actions/workflows/documentation.yml)
 
 ## Future releases
 
@@ -22,14 +23,14 @@ The development roadmap outlines the planned features and improvements for the T
 
 ## Documentation, book and website
 
-The library documentation is available [online](https://thermosyspro.gitlab.io/documentation). It includes material from the book [Modeling and Simulation of Thermal Power Plants with ThermoSysPro](https://www.springer.com/gp/book/9783030051044), which provides an in-depth description of the physics involved in the library.\
+The library documentation is available [online](https://edf-lab.github.io/ThermoSysPro/). It includes material from the book [Modeling and Simulation of Thermal Power Plants with ThermoSysPro](https://www.springer.com/gp/book/9783030051044), which provides an in-depth description of the physics involved in the library.\
 More information can be found on [ThermoSysPro website](https://thermosyspro.com).
 
 ## How to contribute
 
-Contributions from the community are welcome! You can ask questions, report bugs or request a new feature by opening an issue [here](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/issues/new) [preferred option] or on [GitHub](https://github.com/ThermoSysPro/ThermoSysPro/issues/new) (see our [Contribution Guidelines](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/blob/master/ContributionsWorkflow.md?ref_type=heads#first-things-first-open-an-issue) if needed). 
+Contributions from the community are welcome! You can ask questions, report bugs or request a new feature by opening an [issue](https://github.com/EDF-Lab/ThermoSysPro/issues/new/choose) (see our [Contribution Guidelines](ContributionsWorkflow.md#first-things-first-open-an-issue) if needed). 
 
-More in-depth contributions are also welcome. Please refer to [ThermoSysPro workflow](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/blob/master/ContributionsWorkflow.md?ref_type=heads) for detailed procedures on how to contribute.
+More in-depth contributions are also welcome. Please refer to [ThermoSysPro workflow](ContributionsWorkflow.md) for detailed procedures on how to contribute.
 
 ## Citation and References
 
