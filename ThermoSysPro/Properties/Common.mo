@@ -247,8 +247,8 @@ package Common "Data structures and fundamental functions for fluid properties"
       Units.SI.MoleFraction[n, nspecies] mole_y(min = MOLEYMIN, max = MOLEYMAX, nominal = MOLEYNOM) "Mole fraction";
       Units.SI.Mass[n, nspecies] M_x(min = MMIN, max = MMAX, nominal = MNOM) "Component mass";
       Units.SI.MassFlowRate[n, nspecies] dM_x(min = MDOTMIN, max = MDOTMAX, nominal = MDOTNOM) "Rate of change in component mass";
-      MolarFlowRate[n, nspecies] dZ(min = -1.0e6, max = 1.0e6, nominal = 0.0) "Rate of change in component moles";
-      MolarFlowRate[n, nspecies] rZ(min = -1.0e6, max = 1.0e6, nominal = 0.0) "Reaction(source) mole rates";
+      MolarFlowRate[n, nspecies] dZ(min = -1.0e6, max = 1.0e6, nominal = 1.0) "Rate of change in component moles";
+      MolarFlowRate[n, nspecies] rZ(min = -1.0e6, max = 1.0e6, nominal = 1.0) "Reaction(source) mole rates";
       Units.SI.MolarMass[n] MM(min = MMMIN, max = MMMAX, nominal = MMNOM) "Molar mass of mixture";
       Units.SI.AmountOfSubstance[n] Moles(min = MOLMIN, max = MOLMAX, nominal = MOLNOM) "Total moles";
       Units.SI.AmountOfSubstance[n, nspecies] Moles_z(min = MOLMIN, max = MOLMAX, nominal = MOLNOM) "Mole vector";
