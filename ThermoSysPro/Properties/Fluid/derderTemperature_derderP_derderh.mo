@@ -23,36 +23,18 @@ function derderTemperature_derderP_derderh "der(der(Temperature)) computation fo
   input Real der_2_Xso2 = 0;
   output Real der_2_T "Time derivative of Temperature time derivative (K/s2)";
 protected
-  Units.SI.Duration dt = 1;
-  Units.SI.AbsolutePressure delta_P = 0.01*P;
-  Units.SI.SpecificEnthalpy delta_h = 0.01*h;
+  Real eps "Step along (der_P, der_h, der_X) for finite differences";
 algorithm
-// Water/Steam
-  if fluid == 1 then
-//
-// C3H3F5
-  elseif fluid == 2 then
-//
-// FlueGas
-  elseif fluid == 3 then
-    assert(Xco2 + Xh2o + Xo2 + Xso2 > 0, "Wrong mass fraction definition");
-/// Commentaire ajouté (si fluid==2, vérifie que les fractions massiques sont bien fournies en Input)
-//
-// MoltenSalt
-  elseif fluid == 4 then
-//
-// Oil
-  elseif fluid == 5 then
-    der_2_T := (ThermoSysPro.Properties.Fluid.derTemperature_derP_derh(P = P + delta_P, h = h + delta_h, der_P = der_P, der_h = der_h, fluid = fluid, mode = mode, Xco2 = Xco2, Xh2o = Xh2o, Xo2 = Xo2, Xso2 = Xso2) - ThermoSysPro.Properties.Fluid.derTemperature_derP_derh(P = P - delta_P, h = h - delta_h, der_P = der_P, der_h = der_h, fluid = fluid, mode = mode, Xco2 = Xco2, Xh2o = Xh2o, Xo2 = Xo2, Xso2 = Xso2))/dt;
-// Dry Air Ideal Gas
-  elseif fluid == 6 then
-//
-// Water/Steam Simple
-  elseif fluid == 7 then
-//
-  else
-    assert(false, "incorrect fluid number");
-///
+  // Not referenced by any annotation: for tools to use it, Temperature_Ph needs, besides
+  // derivative = derTemperature_derP_derh, the annotation derivative(order = 2) = derderTemperature_derderP_derderh.
+  // der_T = derTemperature_derP_derh(P, h, X, der_P, der_h, der_X) is linear in its derivative inputs, so
+  // der(der_T) = d(der_T)/d(P, h, X) along (der_P, der_h, der_X) + der_T evaluated with (der_2_P, der_2_h, der_2_X).
+  // The first term is a central finite difference of derTemperature_derP_derh along (der_P, der_h, der_X).
+  der_2_T := derTemperature_derP_derh(P, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2, der_2_P, der_2_h, der_2_Xco2, der_2_Xh2o, der_2_Xo2, der_2_Xso2);
+  eps := max({abs(der_P)/max(abs(P), 1e5), abs(der_h)/max(abs(h), 1e5), abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)});
+  if eps > 0 then
+    eps := 1e-6/eps;
+    der_2_T := der_2_T + (derTemperature_derP_derh(P + eps*der_P, h + eps*der_h, fluid, mode, Xco2 + eps*der_Xco2, Xh2o + eps*der_Xh2o, Xo2 + eps*der_Xo2, Xso2 + eps*der_Xso2, der_P, der_h, der_Xco2, der_Xh2o, der_Xo2, der_Xso2) - derTemperature_derP_derh(P - eps*der_P, h - eps*der_h, fluid, mode, Xco2 - eps*der_Xco2, Xh2o - eps*der_Xh2o, Xo2 - eps*der_Xo2, Xso2 - eps*der_Xso2, der_P, der_h, der_Xco2, der_Xh2o, der_Xo2, der_Xso2))/(2*eps);
   end if;
   annotation(
     Documentation(info = "## Copyright © EDF 2002 - 2025

@@ -22,56 +22,37 @@ protected
 protected
   Units.SI.Temperature T "Temperature (K)";
   Real der_T "Temperature time derivative (K/s)";
+  Units.SI.AbsolutePressure dP = 1e-6*max(abs(P), 1e5) "Pressure step for finite differences";
+  Units.SI.SpecificEnthalpy dh = 1e-6*max(abs(h), 1e5) "Specific enthalpy step for finite differences";
+  Real eps "Step along the mass fraction derivatives for finite differences";
   ///annotation(derivative(order=2)=derderDensity_derderP_derderh);
 algorithm
-// Water/Steam
+  // Each branch differentiates the function called by the same branch of Density_Ph
   if fluid == 1 then
     der_pro := ThermoSysPro.Properties.WaterSteam.IF97.Water_Ph_der(p = P, h = h, mode = mode, p_der = der_P, h_der = der_h);
     der_rho := der_pro.d;
-// // C3H3F5
-// elseif fluid==2 then
-//   rho := ThermoSysPro.Properties.C3H3F5.Density_Ph(P=P, h=h);
-//
-// // FlueGas
-  elseif fluid == 3 then
-    assert(Xco2 + Xh2o + Xo2 + Xso2 > 0, "Wrong mass fraction definition");
-/// Commentaire ajouté (si fluid==2, vérifie que les fractions massiques sont bien fournies en Input)
-//   rho := ThermoSysPro.Properties.FlueGases.FlueGases_rho(
-//     PMF=P,
-//     TMF=ThermoSysPro.Properties.FlueGases.FlueGases_T(
-//       PMF=P,
-//       HMF=h,
-//       Xco2=Xco2,
-//       Xh2o=Xh2o,
-//       Xo2=Xo2,
-//       Xso2=Xso2),
-//     Xco2=Xco2,
-//     Xh2o=Xh2o,
-//     Xo2=Xo2,
-//     Xso2=Xso2);
-// MoltenSalt
-//elseif fluid==4 then
+  elseif fluid == 2 or fluid == 3 then
+    // No analytic derivative available: central finite differences of the partial derivatives
+    der_rho := (Density_Ph(P + dP, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2) - Density_Ph(P - dP, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2))/(2*dP)*der_P + (Density_Ph(P, h + dh, fluid, mode, Xco2, Xh2o, Xo2, Xso2) - Density_Ph(P, h - dh, fluid, mode, Xco2, Xh2o, Xo2, Xso2))/(2*dh)*der_h;
+    if fluid == 3 and max({abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)}) > 0 then
+      eps := 1e-6/max({abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)});
+      der_rho := der_rho + (Density_Ph(P, h, fluid, mode, Xco2 + eps*der_Xco2, Xh2o + eps*der_Xh2o, Xo2 + eps*der_Xo2, Xso2 + eps*der_Xso2) - Density_Ph(P, h, fluid, mode, Xco2 - eps*der_Xco2, Xh2o - eps*der_Xh2o, Xo2 - eps*der_Xo2, Xso2 - eps*der_Xso2))/(2*eps);
+    end if;
   elseif fluid == 4 then
+    T := ThermoSysPro.Properties.MoltenSalt.Temperature_h(h = h);
     der_T := ThermoSysPro.Properties.MoltenSalt.derTemperature_derh(h = h, der_h = der_h);
     der_rho := ThermoSysPro.Properties.MoltenSalt.derDensity_derT(T = T, der_T = der_T);
-// Oil
   elseif fluid == 5 then
-// der_rho := ThermoSysPro.Properties.Oil_TherminolVP1.Density_dert(
-//   temp=ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_h(h=h),
-//   der_temp=ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h=h,der_h=der_h));
     T := ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_h(h = h);
     der_T := ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h = h, der_h = der_h);
     der_rho := ThermoSysPro.Properties.Oil_TherminolVP1.Density_derT(temp = T, der_temp = der_T);
-// Dry Air Ideal Gas
   elseif fluid == 6 then
     der_rho := ThermoSysPro.Properties.DryAirIdealGas.derDensity_derP_derT(P = P, T = ThermoSysPro.Properties.DryAirIdealGas.Temperature_h(h = h), der_P = der_P, der_T = ThermoSysPro.Properties.DryAirIdealGas.derTemperature_derh(h = h, der_h = der_h));
-// Water/Steam Simple
   elseif fluid == 7 then
     der_pro := ThermoSysPro.Properties.WaterSteamSimple.SimpleWater.Water_Ph_der(p = P, h = h, mode = mode, p_der = der_P, h_der = der_h);
     der_rho := der_pro.d;
   else
-    assert(false, "incorrect fluid number");
-///
+    assert(false, "derDensity_derP_derh: incorrect fluid number");
   end if;
   annotation(
     Documentation(info = "## Copyright © EDF 2002 - 2025
