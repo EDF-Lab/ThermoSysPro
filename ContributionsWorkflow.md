@@ -1,18 +1,15 @@
 # Contribution and Development Guidelines
 
 ## First Things First: open an issue
-To report a bug, request a new feature, propose a development or for any question, please open an [issue](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/issues).
+To report a bug, request a new feature, propose a development or for any question, please open an [issue](https://github.com/EDF-Lab/ThermoSysPro/issues/new/choose) on the GitHub repository.
 
-If you do not have an account on our GitLab platform you can:
-- [Preferred option] [Mail us](mailto:contact-thermosyspro@edf.fr) to have your account created.
-- [Valid alternative] Open a issue on the [GitHub repository](https://github.com/ThermoSysPro/ThermoSysPro/issues).
-- [Last resort] [Mail us](mailto:contact-thermosyspro@edf.fr) your issue so that we can open it on GitLab on your behalf. 
+If you do not have a GitHub account, you can [mail us](mailto:contact-thermosyspro@edf.fr) your issue so that we can open it on your behalf. 
 
 ## Development Committee
 Regular monthly meeting are run by the EDF R&D team responsible for the development of ThermoSysPro. 
 This Committee has the following objectives:
 - Review new issues, discuss the potential solution, assign them to a developer.
-- Approve developments and merge requests.
+- Approve developments and pull requests.
 - Discuss the development roadmap (library main orientations for the future).
 
 Partners or issue reporter may be invited to participate to this meeting.
@@ -20,9 +17,9 @@ Partners or issue reporter may be invited to participate to this meeting.
 ## Code Development
 
 ### Repository structure
-The [`master`](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/tree/master?ref_type=heads) branch contains only official releases. This is the *default* branch of the repository. A *tag* is associated to each release. No development is made directly in this branch (which is *protected*).
+The [`master`](https://github.com/EDF-Lab/ThermoSysPro/tree/master) branch contains only official releases. This is the *default* branch of the repository. A *tag* is associated to each release. No development is made directly in this branch (which is *protected*).
 
-The [`develop`](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/tree/develop?ref_type=heads) branch is the receptacle of all developments. This branch is also *protected*, meaning that developments can only be done through  `feature`/`fix`/... branches and associated *merge requests*; these branches originate from the `develop` branch and merge later into it. The `develop` branch merges into `master` to originate new official releases. 
+The [`develop`](https://github.com/EDF-Lab/ThermoSysPro/tree/develop) branch is the receptacle of all developments. This branch is also *protected*, meaning that developments can only be done through  `feature`/`fix`/... branches and associated *pull requests*; these branches originate from the `develop` branch and merge later into it. The `develop` branch merges into `master` to originate new official releases. 
 
 ```mermaid
 %%{init: {'gitGraph': {'showCommitLabel': false, 'mainBranchName':'master'}} }%%
@@ -112,17 +109,17 @@ Here follows a synthetic view of the workflow for contribution:
 
 1. Reporter/Developer: create a new `feature` branch from `develop`. *Hint: the branch can be created from the issue itself (to link the future developments to the issue)*. 
 
-    It is recommended to directly create a Merge Request for that branch using the appropriate tag depending on the advances:
-    - `WIP`: Work In Progress.
+    It is recommended to directly create a *draft* Pull Request for that branch, and to use the appropriate label depending on the advances:
+    - `WIP`: Work In Progress (draft pull request).
     - `reviewToMerge`: to be reviewed or ongoing review.
     - `readyToMerge`: waiting the final approval from the DevCom. 
 1. Reporter/Developer: realize the necessary developments in as many *atomic* commits as needed. *Hint: cite the issue `#ID` in commit messages to link commits and issue*.
-1. Reporter/Developer: create a merge request. 
+1. Reporter/Developer: create a pull request (or mark the draft pull request as *ready for review*). 
 
-    &rarr; The merge request will be reviewed by the Development Committee in their periodic meeting. 
+    &rarr; The pull request will be reviewed by the Development Committee in their periodic meeting. 
 
-1. If necessary, comments are added to the merge requests and some additional developments/iterations are requested.
-1. DevCom action: The merge request is accepted and the `feature` branch is merged in the `develop` branch.
+1. If necessary, comments are added to the pull requests and some additional developments/iterations are requested.
+1. DevCom action: The pull request is accepted and the `feature` branch is merged in the `develop` branch.
 
 
 ```mermaid
@@ -131,27 +128,21 @@ issue[Open issue] -.-> DC1([DevCom Issue Review])
 DC2([DevCom Merge Review])
 issue --> branch[feature branch]
 branch --> Developments
-Developments --> mergeR[Merge Request]
+Developments --> mergeR[Pull Request]
 DC2 -.-> Merge[Merge to develop]
 mergeR --> Merge 
 
 ```
 
-### <span style="color: #E0E0E0;"> Non-Regression Tests [Work in progress] </span>
-<span style="color: #E0E0E0;">
+### Non-Regression Tests
 
-Every commit pushed to the remote generates the following actions (*CI/CD pipeline*):
+Every pull request targeting `develop` or `master`, and every push to these branches, runs the following actions (*CI/CD pipeline*):
 
-- Run non-regression tests:
-    - Check, for a set of test models:
-        - the translation,
-        - the simulation.
-    - Verification of results compared to reference calculation.
-    - Report generation and its storage.
-- Mail a notification to:
-    - the committer, 
-    - the *Dev Committee* members,
-    - the person in charge of a test model in case of issues for that model. 
-     
-The *test models* are the models of the `Example` package of ThermoSysPro and an additional library of *private* models. Please [mail](mailto:contact-thermosyspro@edf.fr) us if you want to include some of your model in the test suite.
-</span>
+- Non-regression tests with OpenModelica ([GitHub Actions](https://github.com/EDF-Lab/ThermoSysPro/actions/workflows/openmodelica-tests.yml)):
+    - Check, translation and simulation of the models of the `Examples` package of ThermoSysPro.
+    - Comparison with the target branch of the pull request (`master` for a push to `develop`): fixed models, regressions, changed results.
+    - Report in the run summary, and HTML/CSV reports and OpenModelica logs as artifacts of the run.
+- Non-regression tests with Dymola, on an internal EDF runner (GitLab mirror of the repository).
+- Generation of the [documentation](https://edf-lab.github.io/ThermoSysPro/) from the Modelica annotations ([GitHub Actions](https://github.com/EDF-Lab/ThermoSysPro/actions/workflows/documentation.yml)), published on GitHub Pages from `master`.
+
+The *test models* are the models of the `Examples` package of ThermoSysPro and an additional library of *private* models. Please [mail](mailto:contact-thermosyspro@edf.fr) us if you want to include some of your model in the test suite.

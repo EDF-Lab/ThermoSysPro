@@ -1,3 +1,9 @@
+---
+name: Change request
+about: Propose a new feature or an improvement
+labels: [enhancement]
+---
+
 # Change Request
 
 ## Description
