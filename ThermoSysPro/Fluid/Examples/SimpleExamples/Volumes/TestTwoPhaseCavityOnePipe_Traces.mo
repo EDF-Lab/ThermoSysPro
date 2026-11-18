@@ -6,7 +6,6 @@ model TestTwoPhaseCavityOnePipe_Traces
 
   ThermoSysPro.Fluid.Volumes.TwoPhaseCavityOnePipe cavity(
     redeclare package Medium = Medium,
-    redeclare function PhasesSeparationFunction = Medium.PhasesSeparation(x=cavity.xv),
     steady_state=false,
     P0=13000000,
     P(start=13000000, fixed=true),

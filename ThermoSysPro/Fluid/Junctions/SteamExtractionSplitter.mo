@@ -5,7 +5,6 @@ model SteamExtractionSplitter "Splitter for steam extraction"
 
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = Ce.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Ce.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
   import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
 
   parameter Real alpha = 1
@@ -20,7 +19,7 @@ protected
   parameter Units.SI.MassFlowRate gamma0=1.e-4
     "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
   parameter Integer mode_e=Integer(region_e) - 1 "IF97 region at the inlet. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
-  Medium.C_BiPhase C_record;
+  Medium.C_BiPhase C_e "Trace partition of the inlet mixture";
 
 public
   Real x_ex(start=0.99) "Vapor mass fraction at the extraction outlet";
@@ -61,8 +60,13 @@ equation
   Cex.h_vol_1 = if noEvent(x_ex < 1) then (1 - x_ex)*Medium.bubbleEnthalpy(sat)+ x_ex*Medium.dewEnthalpy(sat) else h;
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
-  Cs.SubC = C_record.Cg;
+  /* Equilibrium partition of the inlet traces (Medium.relativeVolatility). The extraction
+     carries the mixture concentration at its vapor mass fraction x_ex = alpha*xe.
+     The main outlet follows from the balance. */
+  if Medium.nC > 0 then
+    C_e = Medium.equilibriumPartition(Ce.SubC, xe, sat.Tsat);
+  end if;
+  Cex.SubC = x_ex*C_e.Cg + (1 - x_ex)*C_e.Cl;
 
   Cs.Q*Cs.SubC + Cex.Q*Cex.SubC = Ce.Q*Ce.SubC + SubCSaS * Ce.Q;
 
