@@ -413,11 +413,13 @@ equation
       lv[i]    = Medium.dewEnthalpy(sat1[i]) - Medium.bubbleEnthalpy(sat1[i]);
     end if;
 
-    mul1[i] = Medium.dynamicViscosity(Medium.setBubbleState(sat1[i]));
-    muv1[i] = Medium.dynamicViscosity(Medium.setDewState(sat1[i]));
+    /* Transport properties at the actual node state in single phase (as in WaterSteam and ThermoSysPro 4.2),
+       at saturation only in two-phase flow */
+    mul1[i] = if noEvent(xv1[i] <= 0.0 or xv1[i] >= 1.0) then Medium.dynamicViscosity(state1[i]) else Medium.dynamicViscosity(Medium.setBubbleState(sat1[i]));
+    muv1[i] = if noEvent(xv1[i] <= 0.0 or xv1[i] >= 1.0) then Medium.dynamicViscosity(state1[i]) else Medium.dynamicViscosity(Medium.setDewState(sat1[i]));
 
-    kl1[i] = Medium.thermalConductivity(Medium.setBubbleState(sat1[i]));
-    kv1[i] = Medium.thermalConductivity(Medium.setDewState(sat1[i]));
+    kl1[i] = if noEvent(xv1[i] <= 0.0 or xv1[i] >= 1.0) then Medium.thermalConductivity(state1[i]) else Medium.thermalConductivity(Medium.setBubbleState(sat1[i]));
+    kv1[i] = if noEvent(xv1[i] <= 0.0 or xv1[i] >= 1.0) then Medium.thermalConductivity(state1[i]) else Medium.thermalConductivity(Medium.setDewState(sat1[i]));
 
     Pb[i + 1] = max(min(P[i + 1], pcrit - 1), ptriple);
   end for;
@@ -492,11 +494,13 @@ equation
       cpv2[i]  = if noEvent(xv2[i] >= 1.0) then Medium.specificHeatCapacityCp(state2[i]) else Medium.specificHeatCapacityCp(Medium.setDewState(sat2[i]));
     end if;
 
-    mul2[i] = Medium.dynamicViscosity(Medium.setBubbleState(sat2[i]));
-    muv2[i] = Medium.dynamicViscosity(Medium.setDewState(sat2[i]));
+    /* Transport properties at the actual node state in single phase (as in WaterSteam and ThermoSysPro 4.2),
+       at saturation only in two-phase flow */
+    mul2[i] = if noEvent(xv2[i] <= 0.0 or xv2[i] >= 1.0) then Medium.dynamicViscosity(state2[i]) else Medium.dynamicViscosity(Medium.setBubbleState(sat2[i]));
+    muv2[i] = if noEvent(xv2[i] <= 0.0 or xv2[i] >= 1.0) then Medium.dynamicViscosity(state2[i]) else Medium.dynamicViscosity(Medium.setDewState(sat2[i]));
 
-    kl2[i] = Medium.thermalConductivity(Medium.setBubbleState(sat2[i]));
-    kv2[i] = Medium.thermalConductivity(Medium.setDewState(sat2[i]));
+    kl2[i] = if noEvent(xv2[i] <= 0.0 or xv2[i] >= 1.0) then Medium.thermalConductivity(state2[i]) else Medium.thermalConductivity(Medium.setBubbleState(sat2[i]));
+    kv2[i] = if noEvent(xv2[i] <= 0.0 or xv2[i] >= 1.0) then Medium.thermalConductivity(state2[i]) else Medium.thermalConductivity(Medium.setDewState(sat2[i]));
   end for;
 
   /* Fluid densities at the boundaries of the nodes */
