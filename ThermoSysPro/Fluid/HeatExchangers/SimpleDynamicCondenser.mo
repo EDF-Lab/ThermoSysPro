@@ -5,7 +5,6 @@ model SimpleDynamicCondenser "Simple dynamic condenser"
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model for the condenser cavity" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable package Medium_Cooling = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model for the cooling pipes" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Cv.SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Units.SI.Volume V=1 "Cavity volume";
   parameter Units.SI.Area A=1 "Cavity cross-sectional area";
@@ -88,7 +87,8 @@ public
     "Right hand side of the trace balance equation of the liquid phase in the cavity";
   Medium.ExtraProperty BSubCv[Medium.nC](quantity=Medium.extraPropertiesNames)
     "Right hand side of the trace balance equation of the vapor phase in the cavity";
-  Medium.C_BiPhase C_record;
+  Medium.C_BiPhase C_l "Trace partition of the liquid phase of the cavity";
+  Medium.C_BiPhase C_v "Trace partition of the gas phase of the cavity";
   Units.SI.Power BHl
     "Right hand side of the energy balance equation of the liquid phase in the cavity";
   Units.SI.Power BHv
@@ -262,12 +262,18 @@ equation
   X = Cv.Xi;
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
+  /* Equilibrium partition of the traces (Medium.relativeVolatility) applied to
+     every mass transfer between phases. Each transfer removes from one phase
+     exactly what it adds to the other: the balance is exact for any volatility. */
+  if Medium.nC > 0 then
+    C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
+    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
+  end if;
 
   SubCSaS = SaS();
 
-  BSubCl = Qcond*C_record.Cl - Qevap*SubCl - Cl.Q*Cl.SubC;
-  BSubCv = Cv.Q*Cv.SubC + Qevap*SubCl - Qcond*C_record.Cg;
+  BSubCl = Qcond*C_v.Cl - Qevap*C_l.Cg - Cl.Q*Cl.SubC;
+  BSubCv = Cv.Q*Cv.SubC + Qevap*C_l.Cg - Qcond*C_v.Cl;
 
   if dynamic_energy_balance then
     Vl*rhol*der(SubCl) + SubCl*BQl = BSubCl;

@@ -7,7 +7,6 @@ model SteamDryer "Steam dryer"
 
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = Cev.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Cev.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
   parameter Real eta=1 "Steam dryer efficiency (0 <= eta <= 1)";
   parameter Boolean continuous_flow_reversal=false
     "true: continuous flow reversal - false: discontinuous flow reversal";
@@ -19,7 +18,8 @@ protected
   parameter Units.SI.MassFlowRate gamma0=1.e-4
     "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
   parameter Integer mode_e=Integer(region_e) - 1 "IF97 region at the inlet. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
-  Medium.C_BiPhase C_record;
+  Medium.C_BiPhase C_e "Trace partition of the inlet mixture";
+  Real xsv "Vapor mass fraction at the vapor outlet";
 
 public
   Units.SI.AbsolutePressure P(start=10e5) "Fluid pressure";
@@ -73,8 +73,14 @@ equation
   Csl.Xi = X;
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
-  Csv.SubC = C_record.Cg;
+  /* Equilibrium partition of the inlet traces (Medium.relativeVolatility). The vapor
+     outlet keeps the liquid not removed by the dryer (eta < 1): it carries the mixture
+     concentration at its own vapor mass fraction xsv. The liquid outlet follows from the balance. */
+  if Medium.nC > 0 then
+    C_e = Medium.equilibriumPartition(Cev.SubC, xe, sat.Tsat);
+  end if;
+  xsv = noEvent(if (xe > 0) then xe/(1 - eta*(1 - xe)) else 0);
+  Csv.SubC = xsv*C_e.Cg + (1 - xsv)*C_e.Cl;
 
   Csv.Q*Csv.SubC + Csl.Q*Csl.SubC = Cev.Q*Cev.SubC + SubCSaS * Cev.Q;
 

@@ -3,7 +3,7 @@ model TestSteamExtractionSplitter_Traces
   extends ThermoSysPro.UsersGuide.Icons.Example;
 
   replaceable package Medium = ThermoSysPro.Fluid.Examples.SimpleExamples.Media.WaterSteam_NonVolatileTrace;
-  ThermoSysPro.Fluid.Junctions.SteamExtractionSplitter steamExtractionSplitter(redeclare package Medium = Medium, alpha=0.9, redeclare function PhasesSeparationFunction = Medium.PhasesSeparation (x=steamExtractionSplitter.xe)) annotation (Placement(transformation(extent={{-20,20},{0,40}}, rotation=0)));
+  ThermoSysPro.Fluid.Junctions.SteamExtractionSplitter steamExtractionSplitter(redeclare package Medium = Medium, alpha=0.9) annotation (Placement(transformation(extent={{-20,20},{0,40}}, rotation=0)));
   ThermoSysPro.Fluid.BoundaryConditions.SourceQ sourceQ(redeclare package Medium = Medium, h0=2600000) annotation (Placement(transformation(extent={{-100,20},{-80,40}}, rotation=0)));
   ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss2(redeclare package Medium = Medium) annotation (Placement(transformation(extent={{-60,20},{-40,40}}, rotation=0)));
   ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP(redeclare package Medium = Medium, P0=100e5) annotation (Placement(transformation(extent={{60,20},{80,40}}, rotation=0)));

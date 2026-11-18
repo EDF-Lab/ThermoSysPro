@@ -47,7 +47,9 @@ model TestSimpleDynamicCondenser
                   displayUnit="bar"),
     rhom(displayUnit="g/cm3", start=997.1903),
     xv(start=4.3733834E-09),
-    Vv(start=23.606508),
+    /* Steam and condensate flows are both imposed: the steady-state start
+       leaves the condenser mass undetermined, it is fixed by Vv. */
+    Vv(start=23.606508, fixed=true),
     xl(start=-3.5873317E-08))
                    annotation (Placement(transformation(extent={{14,-46},{70,-6}}, rotation=0)));
   ThermoSysPro.Fluid.BoundaryConditions.SourceP source_retourCondensats(

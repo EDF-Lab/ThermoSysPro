@@ -1,7 +1,8 @@
 nSubC
 isCompressible
-partialPhasesSeparation
-HomogeneousPhasesSeparation
+partialRelativeVolatility
+relativeVolatility
+equilibriumPartition
 C_BiPhase
 partialSaS
 noSaS

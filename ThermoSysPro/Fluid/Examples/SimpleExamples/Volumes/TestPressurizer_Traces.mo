@@ -9,7 +9,6 @@ model TestPressurizer_Traces
 
   ThermoSysPro.Fluid.Volumes.Pressurizer pressurizer(
     redeclare package Medium = Medium,
-    redeclare function PhasesSeparationFunction = Medium.PhasesSeparation (x=1),
     Zm=10.15,
     Klv=0.5e6,
     cpp=600,

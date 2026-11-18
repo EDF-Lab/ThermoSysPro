@@ -6,7 +6,7 @@ model TestDryer_Traces
   ThermoSysPro.Fluid.BoundaryConditions.Sink sink(redeclare replaceable package Medium = Medium) annotation (Placement(transformation(extent={{30,-10},{50,10}})));
   ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourcePQ(redeclare replaceable package Medium = Medium, h0=2e6,
     SubC0={1})                                                                                                   annotation (Placement(transformation(extent={{-50,-10},{-30,10}})));
-  ThermoSysPro.Fluid.Junctions.SteamDryer steamDryer(redeclare package Medium = Medium, redeclare function PhasesSeparationFunction = Medium.PhasesSeparation (x=steamDryer.xe)) annotation (Placement(transformation(extent={{-10,-14},{10,6}})));
+  ThermoSysPro.Fluid.Junctions.SteamDryer steamDryer(redeclare package Medium = Medium) annotation (Placement(transformation(extent={{-10,-14},{10,6}})));
   ThermoSysPro.Fluid.BoundaryConditions.Sink sink_cond(redeclare replaceable package Medium = Medium) annotation (Placement(transformation(extent={{30,-40},{50,-20}})));
 equation
   connect(sourcePQ.C, steamDryer.Cev) annotation (Line(points={{-30,0},{-9.9,0}}, color={0,0,0}));

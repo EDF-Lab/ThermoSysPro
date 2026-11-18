@@ -2,7 +2,6 @@ within ThermoSysPro.Fluid.Junctions;
 model StaticDrum "Static drum"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
     replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Ce_steam.SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   parameter Real x=1 "Vapor separation efficiency at the outlet";
   parameter Boolean continuous_flow_reversal=false
     "true: continuous flow reversal - false: discontinuous flow reversal";
@@ -24,7 +23,6 @@ public
   Medium.ExtraProperty SubCl[Medium.nC](quantity=Medium.extraPropertiesNames) "Liquid phase trace substances";
   Medium.ExtraProperty SubCv[Medium.nC](quantity=Medium.extraPropertiesNames) "Vapor phase trace substances";
   Medium.ExtraProperty SubCs_sur[Medium.nC](quantity=Medium.extraPropertiesNames) "Trace substances at the steam/reheater outlet";
-  Medium.C_BiPhase C_record;
   Units.SI.Power Je_steam "Thermal power diffusion from inlet e_steam";
   Units.SI.Power Je_sup "Thermal power diffusion from inlet e_sup";
   Units.SI.Power Je_eva "Thermal power diffusion from inlet e_eva";
@@ -177,11 +175,12 @@ equation
   X = Cs_sur.Xi;
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
+  /* Overall trace balance of the drum, and phase equilibrium between its
+     liquid and gas phases (Medium.relativeVolatility) */
+  fill(0, Medium.nC) = Ce_steam.Q*Ce_steam.SubC + Ce_sup.Q*Ce_sup.SubC + Ce_eva.Q*Ce_eva.SubC + Ce_eco.Q*Ce_eco.SubC
+    - Cs_eva.Q*Cs_eva.SubC - Cs_purg.Q*Cs_purg.SubC - Cs_sup.Q*Cs_sup.SubC - Cs_sur.Q*Cs_sur.SubC;
 
-  fill(0, Medium.nC) = (1 - Medium.vapourQuality(state_e_steam))*Ce_steam.Q*Ce_steam.SubC + (1 - Medium.vapourQuality(state_e_sup))*Ce_sup.Q*Ce_sup.SubC + (1 - Medium.vapourQuality(state_e_eva))*Ce_eva.Q*Ce_eva.SubC + (1 - Medium.vapourQuality(state_e_eco))*Ce_eco.Q*Ce_eco.SubC - Cs_eva.Q*Cs_eva.SubC - Cs_purg.Q*Cs_purg.SubC - Cs_sup.Q*Cs_sup.SubC + Medium.vapourQuality(state_e_steam)*Ce_steam.Q*C_record.Cl + Medium.vapourQuality(state_e_sup)*Ce_sup.Q*C_record.Cl + Medium.vapourQuality(state_e_eva)*Ce_eva.Q*C_record.Cl + Medium.vapourQuality(state_e_eco)*Ce_eco.Q*C_record.Cl - (1 - x)*Cs_sur.Q*SubCl;
-
-  fill(0, Medium.nC) = Medium.vapourQuality(state_e_steam)*Ce_steam.Q*C_record.Cg + Medium.vapourQuality(state_e_sup)*Ce_sup.Q*C_record.Cg + Medium.vapourQuality(state_e_eva)*Ce_eva.Q*C_record.Cg + Medium.vapourQuality(state_e_eco)*Ce_eco.Q*C_record.Cg - x*Cs_sur.Q*SubCv;
+  SubCv = Medium.relativeVolatility(sat.Tsat) .* SubCl;
 
   SubCs_sur = (1 - x)*SubCl + x*SubCv;
 

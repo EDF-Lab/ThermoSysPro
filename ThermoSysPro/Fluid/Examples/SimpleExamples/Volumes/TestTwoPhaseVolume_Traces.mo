@@ -6,7 +6,6 @@ model TestTwoPhaseVolume_Traces
 
   ThermoSysPro.Fluid.Volumes.TwoPhaseVolume volume(
     redeclare package Medium = Medium,
-    redeclare function PhasesSeparationFunction = Medium.PhasesSeparation(x=volume.xv),
     steady_state=false,
     P0=13000000,
     P(start=13000000, fixed=true),

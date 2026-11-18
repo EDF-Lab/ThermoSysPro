@@ -6,7 +6,6 @@ model TestDynamicDrum_Traces
 
   ThermoSysPro.Fluid.Volumes.DynamicDrum drum(
     redeclare package Medium = Medium,
-    redeclare function PhasesSeparationFunction = Medium.PhasesSeparation(x=drum.xv),
     Vertical=false,
     steady_state=false,
     Vv(start=39),

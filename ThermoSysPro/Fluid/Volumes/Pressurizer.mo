@@ -4,7 +4,6 @@ model Pressurizer "Pressurizer"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Cs.SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Units.SI.Volume V=61.1 "Pressurizer volume";
   parameter Units.SI.Radius Rp=1.265 "Pressurizer cross-sectional radius";
@@ -47,7 +46,10 @@ protected
   parameter Units.SI.MassFlowRate gamma0=1.e-4
     "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
   parameter Units.SI.Area Ap=pi*Rp*Rp "Pressurizer cross-sectional area";
-  Medium.C_BiPhase C_record;
+  Medium.C_BiPhase C_l "Trace partition of the liquid phase";
+  Medium.C_BiPhase C_v "Trace partition of the gas phase";
+  Real xl "Vapor mass fraction in the liquid phase";
+  Real xv "Vapor mass fraction in the gas phase";
 
 public
   Units.SI.Area Slpin "Exchange surface between the liquid and the wall";
@@ -241,11 +243,19 @@ equation
   Wpa = Kpa*Ae*(Ta - Tp);
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
+  /* Equilibrium partition of the traces (Medium.relativeVolatility) applied to
+     every mass transfer between phases. Each transfer removes from one phase
+     exactly what it adds to the other: the balance is exact for any volatility. */
+  xl = noEvent(max(0, min(1, (hl - hls)/(hvs - hls))));
+  xv = noEvent(max(0, min(1, (hv - hls)/(hvs - hls))));
+  if Medium.nC > 0 then
+    C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
+    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
+  end if;
   SubCSaS = SaS();
 
-  BSubCl = Cas.Q*Cas.SubC - Cex.Q*Cex.SubC + Qcond*C_record.Cl - Qevap*SubCl;
-  BSubCv = Qevap*SubCl - Cs.Q*Cs.SubC - Qcond*C_record.Cg;
+  BSubCl = Cas.Q*Cas.SubC - Cex.Q*Cex.SubC + Qcond*C_v.Cl - Qevap*C_l.Cg;
+  BSubCv = Qevap*C_l.Cg - Cs.Q*Cs.SubC - Qcond*C_v.Cl;
 
   if dynamic_energy_balance then
     rhol*Vl*der(SubCl) + SubCl*BQl = BSubCl;

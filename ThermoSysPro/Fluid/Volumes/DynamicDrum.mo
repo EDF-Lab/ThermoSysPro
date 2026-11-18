@@ -3,7 +3,6 @@ model DynamicDrum "Dynamic drum"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = Cv.SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Boolean Vertical=true
     "true: vertical cylinder - false: horizontal cylinder";
@@ -52,7 +51,9 @@ protected
   parameter Units.SI.MassFlowRate gamma0=1.e-4
     "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
   parameter Units.SI.Volume Vmin=1.e-6;
-  Medium.C_BiPhase C_record;
+  Medium.C_BiPhase C_m "Trace partition of the evaporation loop mixture (Cm)";
+  Medium.C_BiPhase C_l "Trace partition of the liquid phase";
+  Medium.C_BiPhase C_v "Trace partition of the gas phase";
 
 public
   Units.SI.AbsolutePressure P "Fluid average pressure";
@@ -327,13 +328,20 @@ equation
   Wpa = Kpa*Ape*(Ta - Tp);
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
+  /* Equilibrium partition of the traces (Medium.relativeVolatility) applied to
+     every mass transfer between phases. Each transfer removes from one phase
+     exactly what it adds to the other: the balance is exact for any volatility. */
+  if Medium.nC > 0 then
+    C_m = Medium.equilibriumPartition(Cm.SubC, xmv, sat.Tsat);
+    C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
+    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
+  end if;
   SubCSaS = SaS();
 
   BSubCl = Ce1.Q*Ce1.SubC + Ce2.Q*Ce2.SubC + Ce3.Q*Ce3.SubC
-    - Cd.Q*Cd.SubC - Cs.Q*Cs.SubC + (1 - xmv)*Cm.Q*Cm.SubC
-    + Qcond*C_record.Cl - Qevap*SubCl;
-  BSubCv = xmv*Cm.Q*Cm.SubC - Cv.Q*Cv.SubC + Qevap*SubCl - Qcond*C_record.Cg;
+    - Cd.Q*Cd.SubC - Cs.Q*Cs.SubC + Cm.Q*Cm.SubC - xmv*Cm.Q*C_m.Cg
+    + Qcond*C_v.Cl - Qevap*C_l.Cg;
+  BSubCv = xmv*Cm.Q*C_m.Cg - Cv.Q*Cv.SubC + Qevap*C_l.Cg - Qcond*C_v.Cl;
 
   if dynamic_energy_balance then
     rhol*Vl*der(SubCl) + SubCl*BQl = BSubCl;

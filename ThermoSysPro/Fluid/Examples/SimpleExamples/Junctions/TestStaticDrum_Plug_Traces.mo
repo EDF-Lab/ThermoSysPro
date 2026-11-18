@@ -4,8 +4,7 @@ model TestStaticDrum_Plug_Traces
 
   replaceable package Medium = ThermoSysPro.Fluid.Examples.SimpleExamples.Media.WaterSteam_NonVolatileTrace;
   ThermoSysPro.Fluid.Junctions.StaticDrum StaticDrumTh1(
-    redeclare package Medium = Medium,
-    redeclare function PhasesSeparationFunction = Medium.PhasesSeparation(x=StaticDrumTh1.x)) annotation (Placement(transformation(extent={{-54,0},{-34,20}}, rotation=0)));
+    redeclare package Medium = Medium) annotation (Placement(transformation(extent={{-54,0},{-34,20}}, rotation=0)));
   ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI1(redeclare package Medium = Medium, K=1e-4) annotation (Placement(transformation(extent={{0,-10},{20,10}}, rotation=0)));
   ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI2(redeclare package Medium = Medium, K=1e-4) annotation (Placement(transformation(extent={{-80,-50},{-60,-30}}, rotation=0)));
   ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkP1(redeclare package Medium = Medium, Q0=10) annotation (Placement(transformation(extent={{40,-10},{60,10}}, rotation=0)));

@@ -4,7 +4,6 @@ model TwoPhaseCavityOnePipe "TwoPhaseCavity for one shell pass "
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
-  replaceable function PhasesSeparationFunction = Medium.HomogeneousPhasesSeparation(SubC = CvBP.SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Boolean Vertical=true "true: vertical cylinder - false: horizontal cylinder";
   parameter Units.SI.Radius R=1.05 "Radius of the Cavity cross-sectional area";
@@ -54,7 +53,10 @@ protected
   constant Real pi=Modelica.Constants.pi;
   parameter Units.SI.MassFlowRate gamma0=1.e-4
     "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  Medium.C_BiPhase C_record;
+  Medium.C_BiPhase C_in "Trace partition of the water inlet mixture (Ce)";
+  Medium.C_BiPhase C_bp "Trace partition of the steam inlet mixture CvBP";
+  Medium.C_BiPhase C_gct "Trace partition of the steam inlet mixture CvGCT";
+  Medium.C_BiPhase C_v "Trace partition of the gas phase";
 
 public
   Units.SI.Pressure P(start=10000) "Fluid average pressure";
@@ -313,11 +315,23 @@ equation
   end if;
 
   /* Traces composition balance equations */
-  C_record = PhasesSeparationFunction();
+  /* Equilibrium partition of the traces (Medium.relativeVolatility) applied to
+     every mass transfer between phases. Each transfer removes from one phase
+     exactly what it adds to the other: the balance is exact for any volatility. */
+  if Medium.nC > 0 then
+    C_in = Medium.equilibriumPartition(Ce.SubC, Medium.vapourQuality(state_in_l), sat.Tsat);
+    C_bp = Medium.equilibriumPartition(CvBP.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
+    C_gct = Medium.equilibriumPartition(CvGCT.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
+    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
+  end if;
   SubCSaS = SaS();
 
-  BSubCl = (1 - Medium.vapourQuality(state_in_l))*Ce.Q*Ce.SubC - Cl.Q*Cl.SubC + (Qcond + QcondS)*C_record.Cl;
-  BSubCv = CvBP.Q*CvBP.SubC + CvGCT.Q*CvGCT.SubC + Medium.vapourQuality(state_in_l)*Ce.Q*Ce.SubC - (Qcond + QcondS)*C_record.Cg;
+  /* The liquid part QcondS of the incoming steam carries the liquid share of its traces */
+  BSubCl = Ce.Q*Ce.SubC - Medium.vapourQuality(state_in_l)*Ce.Q*C_in.Cg
+    + CvBP.Q*CvBP.SubC + CvGCT.Q*CvGCT.SubC - Medium.vapourQuality(state_in_v)*(CvBP.Q*C_bp.Cg + CvGCT.Q*C_gct.Cg)
+    - Cl.Q*Cl.SubC + Qcond*C_v.Cl;
+  BSubCv = Medium.vapourQuality(state_in_v)*(CvBP.Q*C_bp.Cg + CvGCT.Q*C_gct.Cg)
+    + Medium.vapourQuality(state_in_l)*Ce.Q*C_in.Cg - Qcond*C_v.Cl;
 
   if dynamic_energy_balance then
     rhol*Vl*der(SubCl) + SubCl*BQl = BSubCl;
