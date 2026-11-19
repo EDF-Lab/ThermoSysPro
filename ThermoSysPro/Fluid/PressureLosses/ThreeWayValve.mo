@@ -1,7 +1,6 @@
 within ThermoSysPro.Fluid.PressureLosses;
 model ThreeWayValve "Three way valve"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
 
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
@@ -28,7 +27,6 @@ model ThreeWayValve "Three way valve"
     "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
   parameter Units.SI.Density p_rho=0 "If > 0, fixed fluid density"
     annotation (Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
-  parameter IF97Region region=IF97Region.All_regions "IF97 region (active for IF97 water/steam only)" annotation(Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
   parameter Boolean dynamic_composition_balance=false
     "<html>true: dynamic fluid composition balance equation <br>false: static fluid composition balance equation</html>" annotation(Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
 
@@ -53,7 +51,6 @@ model ThreeWayValve "Three way valve"
     caract=caract1,
     mode_caract=mode_caract1,
     p_rho=p_rho,
-    region=region,
     gamma_diff=gamma_diff)
                annotation (Placement(transformation(
         origin={-6,-50},
@@ -67,7 +64,6 @@ model ThreeWayValve "Three way valve"
     caract=caract2,
     mode_caract=mode_caract2,
     p_rho=p_rho,
-    region=region,
     gamma_diff=gamma_diff)
                annotation (Placement(transformation(extent={{40,-4},{60,16}},
           rotation=0)));

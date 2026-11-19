@@ -3,7 +3,6 @@ within ThermoSysPro.Fluid.Junctions;
 model SteamDryer "Steam dryer"
 
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
 
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = Cev.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
@@ -12,12 +11,10 @@ model SteamDryer "Steam dryer"
     "true: continuous flow reversal - false: discontinuous flow reversal";
   parameter Boolean diffusion=false
     "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
-  parameter IF97Region region_e=IF97Region.All_regions "IF97 region at the inlet (active for IF97 water/steam only)" annotation(Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
 
 protected
   parameter Units.SI.MassFlowRate gamma0=1.e-4
     "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  parameter Integer mode_e=Integer(region_e) - 1 "IF97 region at the inlet. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
   Medium.C_BiPhase C_e "Trace partition of the inlet mixture";
   Real xsv "Vapor mass fraction at the vapor outlet";
 
@@ -125,7 +122,7 @@ equation
   Csl.diff_on_1 = diffusion;
 
   /* Fluid thermodynamic properties */
-  state_e=Medium.setState_phX(p=Cev.P, h=Cev.h, X=Cev.Xi, region=mode_e);
+  state_e=Medium.setState_phX(p=Cev.P, h=Cev.h, X=Cev.Xi);
   rho = state_e.d;
 
   /* Vapor mass fraction at the inlet */
