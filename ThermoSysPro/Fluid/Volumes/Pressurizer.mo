@@ -4,6 +4,7 @@ model Pressurizer "Pressurizer"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function tracePartition = Medium.equilibriumPartition constrainedby Medium.partialPartition "Liquid/vapour partition law of the traces (default: phase equilibrium)" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Units.SI.Volume V=61.1 "Pressurizer volume";
   parameter Units.SI.Radius Rp=1.265 "Pressurizer cross-sectional radius";
@@ -249,8 +250,8 @@ equation
   xl = noEvent(max(0, min(1, (hl - hls)/(hvs - hls))));
   xv = noEvent(max(0, min(1, (hv - hls)/(hvs - hls))));
   if Medium.nC > 0 then
-    C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
-    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
+    C_l = tracePartition(SubCl, xl, sat.Tsat);
+    C_v = tracePartition(SubCv, xv, sat.Tsat);
   end if;
   SubCSaS = SaS();
 

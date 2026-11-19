@@ -3,6 +3,7 @@ model DynamicDrum "Dynamic drum"
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function tracePartition = Medium.equilibriumPartition constrainedby Medium.partialPartition "Liquid/vapour partition law of the traces (default: phase equilibrium)" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Boolean Vertical=true
     "true: vertical cylinder - false: horizontal cylinder";
@@ -332,9 +333,9 @@ equation
      every mass transfer between phases. Each transfer removes from one phase
      exactly what it adds to the other: the balance is exact for any volatility. */
   if Medium.nC > 0 then
-    C_m = Medium.equilibriumPartition(Cm.SubC, xmv, sat.Tsat);
-    C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
-    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
+    C_m = tracePartition(Cm.SubC, xmv, sat.Tsat);
+    C_l = tracePartition(SubCl, xl, sat.Tsat);
+    C_v = tracePartition(SubCv, xv, sat.Tsat);
   end if;
   SubCSaS = SaS();
 
