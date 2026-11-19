@@ -43,8 +43,6 @@ model TestGenericCombustion1D "TestGenericCombustion1D"
   ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe PipeWaterSteam(
     redeclare package Medium = Medium,
     Ns=7,
-    inertia=false,
-    dynamic_energy_balance=false,
     z2=56,
     rugosrel=5e-5,
     ntubes=403,
@@ -64,9 +62,9 @@ model TestGenericCombustion1D "TestGenericCombustion1D"
   ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkWaterSteam2(
     redeclare package Medium = Medium,
     option_temperature=false,
-    Q(start=486.69),
+    Q(start=486.69, fixed=true),
     h0=2.5e+06,
-    P0=19621600) annotation(
+    P0(fixed=false) = 19621600) annotation(
     Placement(transformation(origin = {90, 90.5}, extent = {{14.5, -15}, {-14.5, 15}}, rotation = 270)));
   ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceEcrans(
     redeclare package Medium = Medium,
