@@ -220,10 +220,12 @@ equation
   Cfg.diff_on_1 = diffusion;
 
  /* Reference specific enthalpies */
-  Hrair = 2501.569e3*XeaH2O;
+  /* Air and flue gases reference enthalpies: Medium_FlueGases enthalpy of the same mixture at 0.01 degC,
+     i.e. the zero of ThermoSysPro.Properties.FlueGases.FlueGases_h used with the lower heating value */
+  Hrair = Medium_FlueGases.specificEnthalpy_pTX(p=Pea, T=273.16, X=Xea);
   Hrfuel = 0;
   Hrws = 2501.569e3;
-  Hrfg = 2501.569e3*XsfH2O;
+  Hrfg = Medium_FlueGases.specificEnthalpy_pTX(p=Psf, T=273.16, X=Xsf);
   Hrcd = 0;
 
   /* Air specific enthalpy at the inlet */

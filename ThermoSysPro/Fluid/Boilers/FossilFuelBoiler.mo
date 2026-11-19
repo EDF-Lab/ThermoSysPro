@@ -311,9 +311,11 @@ equation
   0 = if (XeaO2 > teps) then (XeaO2c - XeaO2) else (XeaO2c - teps);
 
   /* Reference specific enthalpies */
-  Hrair = 2501.569e3*XeaH2O;
+  /* Air and flue gases reference enthalpies: Medium_FlueGases enthalpy of the same mixture at 0.01 degC,
+     i.e. the zero of ThermoSysPro.Properties.FlueGases.FlueGases_h used with the lower heating value */
+  Hrair = Medium_FlueGases.specificEnthalpy_pTX(p=Pea, T=273.16, X=Xea);
   Hrcomb = 0;
-  Hrfum = 2501.569e3*XsfH2O;
+  Hrfum = Medium_FlueGases.specificEnthalpy_pTX(p=Psf, T=273.16, X=Xsf);
 
   /* Water/steam thermodynamic properties */
   state_ws_m = Medium.setState_phX(p=(Pee + Pse)/2, h=(Hee + Hse)/2, X=Xws);
