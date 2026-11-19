@@ -4,6 +4,7 @@ model TwoPhaseCavity "TwoPhaseCavity for one shell pass "
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function tracePartition = Medium.equilibriumPartition constrainedby Medium.partialPartition "Liquid/vapour partition law of the traces (default: phase equilibrium)" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Boolean Vertical=true "true: vertical cylinder - false: horizontal cylinder";
   parameter Units.SI.Radius R=1.05 "Radius of the Cavity cross-sectional area";
@@ -437,9 +438,9 @@ equation
      every mass transfer between phases. Each transfer removes from one phase
      exactly what it adds to the other: the balance is exact for any volatility. */
   if Medium.nC > 0 then
-    C_in = Medium.equilibriumPartition(Ce.SubC, Medium.vapourQuality(state_in_l), Tsat);
-    C_l = Medium.equilibriumPartition(SubCl, xl, Tsat);
-    C_v = Medium.equilibriumPartition(SubCv, xv, Tsat);
+    C_in = tracePartition(Ce.SubC, Medium.vapourQuality(state_in_l), Tsat);
+    C_l = tracePartition(SubCl, xl, Tsat);
+    C_v = tracePartition(SubCv, xv, Tsat);
   end if;
   SubCSaS = SaS();
 
