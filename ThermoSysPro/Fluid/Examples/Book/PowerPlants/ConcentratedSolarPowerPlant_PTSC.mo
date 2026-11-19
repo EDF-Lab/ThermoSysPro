@@ -52,9 +52,9 @@ model ConcentratedSolarPowerPlant_PTSC "Model of a concentrated solar power plan
     Placement(transformation(extent = {{84, -91}, {64, -71}}, rotation = 0)));
   ThermoSysPro.Fluid.Volumes.VolumeC Ballon(redeclare package Medium = Medium, V = 1, h0 = 3e5, h(start = 1125640.0), P0 = 7000000, dynamic_mass_balance = true, P(start = 7000000)) annotation(
     Placement(transformation(extent = {{-63, -91}, {-83, -71}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValveBallon(redeclare package Medium = Medium, Cvmax(fixed = true) = 300, C2(P(fixed = false, start = 70e5)), Pm(start = 7000060.0), region = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValveBallon(redeclare package Medium = Medium, Cvmax(fixed = true) = 300, C2(P(fixed = false, start = 70e5)), Pm(start = 7000060.0)) annotation(
     Placement(transformation(origin = {-30, -75}, extent = {{-10, 10}, {10, -10}}, rotation = 180)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValveBallon1(redeclare package Medium = Medium, Cvmax = 10, C1(P(start = 10618800.0), h_vol_2(start = 1127430.0)), C2(h_vol_1(start = 1127430.0)), Pm(start = 9676220.0), region = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValveBallon1(redeclare package Medium = Medium, Cvmax = 10, C1(P(start = 10618800.0), h_vol_2(start = 1127430.0)), C2(h_vol_1(start = 1127430.0)), Pm(start = 9676220.0)) annotation(
     Placement(transformation(origin = {-212, -75}, extent = {{-10, 10}, {10, -10}}, rotation = 180)));
   ThermoSysPro.Fluid.BoundaryConditions.SourceP sourcePCaloporteur(redeclare package Medium = Medium, option_temperature = false, h0 = 63.03e3, P0(fixed = false) = 500000, Q(fixed = true, start = 14.9263)) annotation(
     Placement(transformation(extent = {{66, -49}, {94, -22}}, rotation = 0)));

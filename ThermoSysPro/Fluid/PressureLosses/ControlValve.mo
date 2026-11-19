@@ -2,7 +2,6 @@ within ThermoSysPro.Fluid.PressureLosses;
 model ControlValve "Control valve"
 extends ThermoSysPro.Fluid.Interfaces.IconColors;
  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
 
   parameter ThermoSysPro.Units.xSI.Cv Cvmax=8005.42
     "Maximum CV (active if mode_caract=0)";
@@ -18,10 +17,8 @@ extends ThermoSysPro.Fluid.Interfaces.IconColors;
     "Diffusion conductance (active if diffusion=true in neighbouring volumes)";
   parameter Units.SI.Density p_rho=0 "If > 0, fixed fluid density"
     annotation (Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
-  parameter IF97Region region=IF97Region.All_regions "IF97 region (active for IF97 water/steam only)" annotation(Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
 
 protected
-  parameter Integer mode=Integer(region) - 1 "IF97 region. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
   parameter Real eps=1.e-3 "Small number for pressure loss equation";
   parameter Units.SI.Density rho_15=999 "density of the water at 15.5556 °C";
 
