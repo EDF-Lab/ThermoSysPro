@@ -124,6 +124,8 @@ public
   Medium.MassFraction Xws[Medium.nXi](start=Medium.X_default[1:Medium.nXi]) "Water/steam mass fractions";
   Medium_FlueGases.MassFraction Xea[Medium_FlueGases.nX](start=Medium_FlueGases.X_default) "Air inlet mass fractions";
   Medium_FlueGases.MassFraction Xsf[Medium_FlueGases.nX](start=Medium_FlueGases.X_default) "Flue gases outlet mass fractions";
+  Medium_FlueGases.ThermodynamicState state_air_in "Air inlet thermodynamic state";
+  Medium_FlueGases.ThermodynamicState state_fg_out "Flue gases outlet thermodynamic state";
   Medium.ExtraProperty SubCws[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default) "Water/steam trace substances";
   Medium_FlueGases.ExtraProperty SubCfg[Medium_FlueGases.nC](quantity=Medium_FlueGases.extraPropertiesNames, start=Medium_FlueGases.C_default) "Flue gases trace substances";
 
@@ -272,13 +274,15 @@ equation
   Cfg.diff_on_1 = diffusion;
 
   /* Air thermodynamic properties at the inlet */
-  Hea = ThermoSysPro.Properties.FlueGases.FlueGases_h(Pea, Tea, XeaCO2, XeaH2O, XeaO2, XeaSO2);
-  Cpair = ThermoSysPro.Properties.FlueGases.FlueGases_cp(Pea, Tea, XeaCO2, XeaH2O, XeaO2, XeaSO2);
-  rhoea = ThermoSysPro.Properties.FlueGases.FlueGases_rho(Pea, Tea, XeaCO2, XeaH2O, XeaO2, XeaSO2);
+  state_air_in = Medium_FlueGases.setState_pTX(p=Pea, T=Tea, X=Xea);
+  Hea = Medium_FlueGases.specificEnthalpy(state_air_in);
+  Cpair = Medium_FlueGases.specificHeatCapacityCp(state_air_in);
+  rhoea = Medium_FlueGases.density(state_air_in);
 
   /* Flue gases thermodynamic properties at the outlet */
-  Hsf = ThermoSysPro.Properties.FlueGases.FlueGases_h(Psf, Tsf, XsfCO2, XsfH2O, XsfO2, XsfSO2);
-  rhosf = ThermoSysPro.Properties.FlueGases.FlueGases_rho(Psf, Tsf, XsfCO2, XsfH2O, XsfO2, XsfSO2);
+  state_fg_out = Medium_FlueGases.setState_pTX(p=Psf, T=Tsf, X=Xsf);
+  Hsf = Medium_FlueGases.specificEnthalpy(state_fg_out);
+  rhosf = Medium_FlueGases.density(state_fg_out);
 
   // --------------------
   //  BEAU DE ROCHAS CYCLE
@@ -295,7 +299,7 @@ equation
   MMfumees = (1 - XsfCO2 - XsfH2O - XsfO2 - XsfSO2)*28 + XsfCO2*44 + XsfH2O*18 + XsfO2*32 + XsfSO2*64;
   Pfcb = Pfcp*Tfcb/Tfcp*MMairgaz/MMfumees;
   //Tfcb = (Wcomb - Wpth_ref)/ThermoSysPro.Properties.FlueGases.FlueGases_cp(Pfcp, (Tfcp + Tfcb)/2, XsfCO2, XsfH2O, XsfO2, XsfSO2)/0.75/Qsf + Tfcp;
-  Tfcb = Wcomb/ThermoSysPro.Properties.FlueGases.FlueGases_cp(Pfcp, (Tfcp + Tfcb)/2, XsfCO2, XsfH2O, XsfO2, XsfSO2)/Qsf + Tfcp;
+  Tfcb = Wcomb/Medium_FlueGases.specificHeatCapacityCp(Medium_FlueGases.setState_pTX(p=Pfcp, T=(Tfcp + Tfcb)/2, X=Xsf))/Qsf + Tfcp;
 
   /* (4) Polytropic expansion */
   Tfd = Tfcb *(1/RV)^(Kd - 1);
@@ -313,7 +317,7 @@ equation
     Rmeca = Coef_Rm_a * Wcomb/1000*Wcomb/1000 + Coef_Rm_b*Wcomb/1000 + Coef_Rm_c;
   else
     Rmeca = ((Qcomb*(Hcomb - Hrcomb + PCIcomb) + Qea*(Hea - Hrair))
-            -(Qsf*(ThermoSysPro.Properties.FlueGases.FlueGases_h(Psf, Tfe, XsfCO2, XsfH2O, XsfO2, XsfSO2)
+            -(Qsf*(Medium_FlueGases.specificEnthalpy_pTX(p=Psf, T=Tfe, X=Xsf)
             -Hrfum) + Wpth_ref))/Wcomb;
   end if;
 
@@ -331,9 +335,11 @@ equation
   Wact = Welec*Cosphi;
 
   /* Reference specific enthalpies */
-  Hrair = 2501.569e3*XeaH2O;
+  /* Air and flue gases reference enthalpies: Medium_FlueGases enthalpy of the same mixture at 0.01 degC,
+     i.e. the zero of ThermoSysPro.Properties.FlueGases.FlueGases_h used with the lower heating value */
+  Hrair = Medium_FlueGases.specificEnthalpy_pTX(p=Pea, T=273.16, X=Xea);
   Hrcomb = 0;
-  Hrfum = 2501.569e3*XsfH2O;
+  Hrfum = Medium_FlueGases.specificEnthalpy_pTX(p=Psf, T=273.16, X=Xsf);
 
     annotation (Diagram(graphics={
         Rectangle(
