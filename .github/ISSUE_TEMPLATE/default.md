@@ -1,4 +1,10 @@
-<!-- Please use a template. Appropriate labels can also be added, for more information please see [ThermoSysPro gitflow](https://gitlab.pam-retd.fr/thermosysproandco/ThermoSysPro/-/blob/master/ContributionsWorkflow.md?ref_type=heads). -->
+---
+name: Issue
+about: Report a bug or ask a question
+labels: []
+---
+
+<!-- Appropriate labels can also be added, for more information please see [ThermoSysPro workflow](https://github.com/EDF-Lab/ThermoSysPro/blob/master/ContributionsWorkflow.md). -->
 
 # Issue
 
