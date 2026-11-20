@@ -5,7 +5,44 @@ model SteamGenerator_1SG "Single steam generator"
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model for the secondary water/steam side" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable package Medium_Primary = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model for the primary side" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
-  parameter Real H0_Mix_AlimDomeGV=1194812.89980521;
+  parameter Integer Ns=5 "Number of segments in tubes and riser" annotation (Dialog(tab="General", group="Geometry"));
+
+  parameter Integer n_tubes=4085 "Number of pipes in parallel" annotation (Dialog(tab="General", group="Geometry"));
+  parameter Units.SI.Area S=4669 "Heat exchange area" annotation (Dialog(tab="General", group="Geometry"));
+  parameter Units.SI.Length e_tubes=1.2e-3 "Pipe's wall thickness" annotation (Dialog(tab="General", group="Geometry"));
+  parameter Units.SI.Length Dext_tubes=22.0e-3 "Pipe's external Diameter" annotation (Dialog(tab="General", group="Geometry"));
+  parameter Units.SI.Length Leq=S/(n_tubes*(Dext_tubes - 2*e_tubes)*Modelica.Constants.pi) "Equivalent length for pipes and riser" annotation (Dialog(tab="General", group="Geometry"));
+  parameter Real hcCorr=5.0 "Corrective term for the heat exchange coefficient (hc) inside all pipes - to tune correct Tcold_primary" annotation (Dialog(tab="General", group="Geometry"));
+
+  parameter Units.SI.Volume V_sep=7.0 "Volume of the separator" annotation (Dialog(tab="General", group="Separator: from Riser volume to Dome"));
+  parameter Units.SI.Length L_sep=3.0 "Length of the separator" annotation (Dialog(tab="General", group="Separator: from Riser volume to Dome"));
+  parameter Units.SI.Length D_sep=fromVtoDeq(V_sep, L_sep, 1) "Equivalent diameter of the separator (considered one pipe)" annotation (Dialog(tab="General", group="Separator: from Riser volume to Dome"));
+
+  parameter Units.SI.Volume V_Riser=45.0 "Riser's volume " annotation (Dialog(tab="General", group="Riser (Tube bundle in the secondary)"));
+  parameter Units.SI.Length D_Riser=fromVtoDeq(
+      V_Riser,
+      Leq/2,
+      n_tubes) "Equivalent diameter of the riser" annotation (Dialog(tab="General", group="Riser (Tube bundle in the secondary)"));
+  parameter Real K_riser=10 "Pressure loss coefficient to tune correct recirculation rate" annotation (Dialog(tab="General", group="Riser (Tube bundle in the secondary)"));
+
+  parameter Units.SI.Volume V_Dome=60.0 "Volume of the dome" annotation (Dialog(tab="General", group="Dome"));
+  parameter Units.SI.Length L_Dome=5.0 "Length of the dome" annotation (Dialog(tab="General", group="Dome"));
+  parameter Units.SI.Length R_Dome=sqrt(V_Dome/(L_Dome*Modelica.Constants.pi)) "Radius of the dome" annotation (Dialog(tab="General", group="Dome"));
+
+  parameter Units.SI.Volume V_DownComer=8.0 "Volume of the downcomer" annotation (Dialog(tab="General", group="DownComer"));
+  parameter Units.SI.Diameter Dint_DownComer=4.0 "Inner diameter of the annular downcomer" annotation (Dialog(tab="General", group="DownComer"));
+  final parameter AnnularHydraulicEquivalence downComerHydraulicEquivalence=
+      fromAnnularVtoHydraulicEquivalence(
+        V_DownComer,
+        Leq/2,
+        Dint_DownComer);
+  final parameter Units.SI.Diameter Dh_DownComer=
+      downComerHydraulicEquivalence.Dh "Hydraulic diameter of the annular downcomer";
+  final parameter Real neq_DownComer=downComerHydraulicEquivalence.neq
+      "Equivalent number of circular pipes preserving the downcomer flow area";
+
+  parameter Units.SI.Volume V_MixARE=12.0 "Volume where feedwater mixes with recirculation" annotation (Dialog(tab="General", group="MixARE"));
+
   parameter Boolean inertia=false
     "true: momentum balance equation with inertia - false: without inertia";
   parameter Boolean advection=false
@@ -30,18 +67,20 @@ model SteamGenerator_1SG "Single steam generator"
   parameter Boolean diffusion=false
     "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
 
+  Real CirculationRate "Circulation rate";
+  Units.SI.Power W_GV_primary "Power from primary to SG";
+  Units.SI.Power W_GV_secondary "Power from SG to secondary";
+
 public
   ThermoSysPro.Fluid.HeatExchangers.DynamicOnePhaseFlowPipe UtubeHotLeg(
     redeclare package Medium = Medium_Primary,
-    L=10.848,
-    D=0.01687,
-    z2=10.848,
-    h(start={1483455.66417054,1452982.36179149,1407381.72335656,1372666.398393,
-          1346263.00297153,1326153.46646787,1326153}),
-    Ns=5,
+    L=Leq/2,
+    D=Dext_tubes - 2*e_tubes,
+    ntubes=n_tubes,
+    z2=Leq/2,
+    hcCorr=hcCorr,
+    Ns=Ns,
     dpfCorr=0.17,
-    hcCorr=5,
-    ntubes=5340,
     advection=advection,
     dynamic_energy_balance=dynamic_energy_balance,
     dynamic_mass_balance=dynamic_mass_balance,
@@ -50,26 +89,21 @@ public
     inertia=inertia,
     continuous_flow_reversal=continuous_flow_reversal,
     diffusion=diffusion,
-    option_temperature=option_temperature,
-    P(start={15548026.576998,15539261.540558,15513354.885726,15479081.11289,15444819.569988,
-          15410560.642776,15395560}),
-    Tp(start={564,562,560,559,568}))
+    option_temperature=option_temperature)
                  annotation (Placement(transformation(
         origin={-67,-41.5},
         extent={{30.5,-15},{-30.5,15}},
         rotation=270)));
 
-  ThermoSysPro.Fluid.HeatExchangers.DynamicOnePhaseFlowPipe UtubeColdtLeg(
+  ThermoSysPro.Fluid.HeatExchangers.DynamicOnePhaseFlowPipe UtubeColdLeg(
     redeclare package Medium = Medium_Primary,
-    L=10.848,
-    D=0.01687,
-    h(start={1326153.46646787,1310848.36111251,1299218.76228131,
-          1290360.28876122,1283604.94388924,1280654.73156587,1280654.73156587}),
-    Ns=5,
+    L=Leq/2,
+    D=Dext_tubes - 2*e_tubes,
+    ntubes=n_tubes,
+    z1=Leq/2,
+    hcCorr=hcCorr,
+    Ns=Ns,
     dpfCorr=0.17,
-    hcCorr=5,
-    z1=10.848,
-    ntubes=5340,
     inertia=inertia,
     advection=advection,
     dynamic_energy_balance=dynamic_energy_balance,
@@ -78,10 +112,7 @@ public
     steady_state=steady_state,
     continuous_flow_reversal=continuous_flow_reversal,
     diffusion=diffusion,
-    option_temperature=option_temperature,
-    P(start={15393431.104025,15393244.26355,15392971.944187,15392877.066005,15392915.646752,
-          15393000.834432,15393020}),
-    Tp(start={584,580,575,571,568}))
+    option_temperature=option_temperature)
                  annotation (Placement(transformation(
         origin={67,-41.5},
         extent={{30.5,-14},{-30.5,14}},
@@ -89,13 +120,9 @@ public
 
   ThermoSysPro.Fluid.Volumes.DynamicDrum DomeGV(
     redeclare package Medium = Medium,
-    hl(start=1257382.15477056),
-    hv(start=2771260.46625813),
     cpp=500,
-    L=8.625,
-    Cd(P(start=67.9e5)),
-    zl(fixed=false, start=0.66),
-    R=4.2818979,
+    L=L_Dome,
+    R=R_Dome,
     Mp=32000,
     dynamic_energy_balance=dynamic_energy_balance,
     steady_state=steady_state,
@@ -105,11 +132,11 @@ public
     P0=P0)
               annotation (Placement(transformation(extent={{-22,64},{22,107}},
           rotation=0)));
-protected
   ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe DPSeparateurCyclone(
     redeclare package Medium = Medium,
-    L=1,
-    D=0.95886,
+    L=L_sep,
+    D=D_sep,
+    z2=L_sep,
     lambda=0.03,
     inertia=inertia)
                  annotation (Placement(transformation(
@@ -119,9 +146,7 @@ protected
 public
   ThermoSysPro.Fluid.Volumes.VolumeC MixAlimDomeGV(
     redeclare package Medium = Medium,
-    h0=H0_Mix_AlimDomeGV,
-    h(start=1194851.37111438),
-    V=0.01,
+    V=V_MixARE,
     dynamic_energy_balance=dynamic_energy_balance,
     steady_state=steady_state,
     dynamic_mass_balance=dynamic_mass_balance,
@@ -141,7 +166,6 @@ public
   ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss DPnulle_DomeDwnc(
     redeclare package Medium = Medium,
     p_rho=0,
-    C2(P(start=6829391.22090726), Q(fixed=false, start=6643)),
     K=0.172144)                   annotation (Placement(transformation(extent={{53,53},
             {63,73}},          rotation=0)));
 
@@ -162,6 +186,8 @@ public
   ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet fluidOutletI1(redeclare package Medium = Medium_Primary)
     annotation (Placement(transformation(extent={{36,-132},{56,-112}}, rotation=
            0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet fluidOutletI_purge(redeclare package Medium = Medium) "Purge outlet (optional)"
+    annotation (Placement(transformation(extent={{140,-130},{160,-110}}, rotation=0), iconTransformation(extent={{36,-100},{56,-80}})));
   ThermoSysPro.InstrumentationAndControl.Connectors.OutputReal outputReal
     annotation (Placement(transformation(extent={{-42,86},{-62,106}}, rotation=
             0)));
@@ -169,53 +195,39 @@ public
   ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe DownComerGV(
     redeclare package Medium = Medium,
     p_rho=0,
-    h(start=1194851.3),
-    z1=10.8,
-    C1(
-      h_vol_1(start=1.1733e6),
-      h(start=1.1733e6),
-      Q(start=7525.84),
-      P(start=6829391.22090726)),
-    L=10.8,
-    D=0.216,
-    C2(
-      h_vol_1(start=1.1733e6),
-      Q(start=7525.84),
-      h(start=1.1733e6),
-      P(fixed=false, start=68.4935e5)),
-    lambda=0.08,
-    ntubes=32,
-    Q(start=7525.84/4),
+    L=Leq/2,
+    D=Dh_DownComer,
+    ntubes=neq_DownComer,
+    z1=Leq/2,
+    lambda=0.09,
     inertia=inertia)           "DownComerGV" annotation (Placement(transformation(
         origin={94.5,-41},
         extent={{-31,16.5},{31,-16.5}},
         rotation=270)));
   Thermal.HeatTransfer.HeatExchangerWall heatExchangerWall(
-    L=10.848,
-    D=0.01687,
-    e=2.18e-3,
+    ntubes=UtubeHotLeg.ntubes,
+    L=UtubeHotLeg.L,
+    D=UtubeHotLeg.D,
+    e=e_tubes,
+    Ns=UtubeHotLeg.Ns,
     lambda=23,
     cpw=503,
     rhow=8430,
-    Ns=5,
-    ntubes=5340,
-    dynamic_energy_balance=dynamic_energy_balance,
-    Tp(start={571,568,566,564,562}))
+    dynamic_energy_balance=dynamic_energy_balance)
                   annotation (Placement(transformation(
         origin={-44,-41},
         extent={{-33,-16},{33,16}},
         rotation=270)));
   Thermal.HeatTransfer.HeatExchangerWall heatExchangerWall1(
-    L=10.848,
-    D=0.01687,
-    e=2.18e-3,
+    ntubes=UtubeColdLeg.ntubes,
+    L=UtubeColdLeg.L,
+    D=UtubeColdLeg.D,
+    e=e_tubes,
+    Ns=UtubeColdLeg.Ns,
     lambda=23,
     cpw=503,
     rhow=8430,
-    Ns=5,
-    ntubes=5340,
-    dynamic_energy_balance=dynamic_energy_balance,
-    Tp(start={563,560,558,557,556}))
+    dynamic_energy_balance=dynamic_energy_balance)
                   annotation (Placement(transformation(
         origin={44,-41},
         extent={{-33,16},{33,-16}},
@@ -223,16 +235,13 @@ public
 
   ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowRiser RiserGV(
     redeclare package Medium = Medium,
-    Ns=5,
-    h(start={1194851.37008144,1260885.3160958,1364323.64228458,1450411.24087846,
-          1525552.01981793,1595519.78942018,1595519.78863864}),
-    D=0.03689,
-    L=10.848,
-    z2=10.848,
-    hcCorr=5,
+    L=Leq/2,
+    D=D_Riser,
+    ntubes=n_tubes,
+    z2=Leq/2,
+    hcCorr=hcCorr,
+    Ns=Ns,
     dpfCorr=1,
-    ntubes=5340,
-    Q(start={8600/4,8600/4,8600/4,8600/4,8600/4,8600/4}),
     inertia=inertia,
     advection=advection,
     dynamic_energy_balance=dynamic_energy_balance,
@@ -241,31 +250,28 @@ public
     steady_state=steady_state,
     continuous_flow_reversal=continuous_flow_reversal,
     diffusion=diffusion,
-    option_temperature=option_temperature,
-    P(start={6866734.6044951,6862203.9025063,6853535.2456408,6846247.0825137,6840314.8313501,
-          6834912.1497303,6828884.4924605}),
-    Tp1(start={563.83109489963,562.97171435789,562.21322867383,561.55248247184,560.97588254902}),
-    Tp2(start={563.83109489963,562.97171435789,562.21322867383,561.55248247184,560.97588254902}))
+    option_temperature=option_temperature)
                                                           annotation (Placement(
         transformation(
         origin={-2.5,-41},
         extent={{-32,31.5},{32,-31.5}},
         rotation=90)));
 
-  ThermoSysPro.Fluid.Volumes.VolumeC volumeA(
+  ThermoSysPro.Fluid.Volumes.VolumeA volumeA(
     redeclare package Medium = Medium,
+    P0=68.4935e5,
     h0=1185.2e3,
     dynamic_energy_balance=dynamic_energy_balance,
     steady_state=steady_state,
     dynamic_mass_balance=dynamic_mass_balance,
     continuous_flow_reversal=continuous_flow_reversal,
-    diffusion=diffusion,
-    P0=6849350)                annotation (Placement(transformation(
-        origin={1,-90},
+    diffusion=diffusion)       annotation (Placement(transformation(
+        origin={1,-110},
         extent={{-10,-10},{10,10}},
         rotation=90)));
   ThermoSysPro.Fluid.Volumes.VolumeC volumeA1(
     redeclare package Medium = Medium,
+    V=0.1,
     dynamic_energy_balance=dynamic_energy_balance,
     steady_state=steady_state,
     dynamic_mass_balance=dynamic_mass_balance,
@@ -275,8 +281,60 @@ public
         origin={0,18},
         extent={{-10,-10},{10,10}},
         rotation=90)));
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss DPnulle_Tcirc(
+    redeclare package Medium = Medium,
+    p_rho=0,
+    K=K_riser) annotation (Placement(transformation(
+        extent={{-6,-7},{6,7}},
+        rotation=90,
+        origin={1,-86})));
+
+  function fromVtoDeq "Equivalent diameter of ntubes circular pipes of total volume V and length L"
+    input Units.SI.Volume V;
+    input Units.SI.Length L;
+    input Integer ntubes;
+    output Units.SI.Length D;
+  algorithm
+    D := sqrt((4*V)/(L*Modelica.Constants.pi*ntubes));
+  end fromVtoDeq;
+
+  record AnnularHydraulicEquivalence "Hydraulic equivalence of an annular duct"
+    Units.SI.Diameter Dh "Hydraulic diameter";
+    Real neq "Equivalent number of circular pipes preserving the flow area";
+  end AnnularHydraulicEquivalence;
+
+  function fromAnnularVtoHydraulicEquivalence "Hydraulic diameter and equivalent number of pipes of an annular duct of volume V, length L and inner diameter Dint"
+    input Units.SI.Volume V;
+    input Units.SI.Length L;
+    input Units.SI.Diameter Dint;
+    output AnnularHydraulicEquivalence hydraulicEquivalence;
+  protected
+    Units.SI.Area A;
+    Units.SI.Diameter Dext;
+  algorithm
+    assert(V > 0, "The annular volume must be strictly positive");
+    assert(L > 0, "The annular length must be strictly positive");
+    assert(Dint >= 0, "The annular inner diameter must be positive or zero");
+    A := V/L;
+    Dext := sqrt(Dint^2 + 4*A/Modelica.Constants.pi);
+    hydraulicEquivalence.Dh := Dext - Dint;
+    hydraulicEquivalence.neq :=
+      A/(Modelica.Constants.pi*hydraulicEquivalence.Dh^2/4);
+  end fromAnnularVtoHydraulicEquivalence;
 equation
-  connect(UtubeHotLeg.C2, UtubeColdtLeg.C1) annotation (Line(
+  CirculationRate = DownComerGV.Q/fluidOutletI.Q;
+  W_GV_primary = (fluidInlet1.h - fluidOutletI1.h)*fluidInlet1.Q;
+  W_GV_secondary = -(fluidInlet.h - fluidOutletI.h)*fluidInlet.Q;
+
+  /* Unconnected purge outlet */
+  if (cardinality(fluidOutletI_purge) == 1) then
+    fluidOutletI_purge.Q = 0;
+    fluidOutletI_purge.h_vol_2 = 1.e5;
+    fluidOutletI_purge.diff_res_2 = 0;
+    fluidOutletI_purge.diff_on_2 = false;
+  end if;
+
+  connect(UtubeHotLeg.C2, UtubeColdLeg.C1) annotation (Line(
       points={{-67,-11},{-67,-2},{67,-2},{67,-11}},
       color={127,0,0},
       thickness=0.5));
@@ -296,7 +354,7 @@ equation
       points={{-46,-122},{-66,-122},{-66,-72},{-67,-72}},
       color={127,0,0},
       thickness=0.5));
-  connect(UtubeColdtLeg.C2, fluidOutletI1) annotation (Line(
+  connect(UtubeColdLeg.C2, fluidOutletI1) annotation (Line(
       points={{67,-72},{68,-78},{68,-122},{46,-122}},
       color={127,0,0},
       thickness=0.5));
@@ -308,15 +366,15 @@ equation
       points={{-62.5,-41.5},{-57.25,-41.5},{-57.25,-41},{-47.2,-41}},
       color={191,95,0},
       thickness=0.5));
-  connect(heatExchangerWall1.WT1, UtubeColdtLeg.CTh) annotation (Line(
+  connect(heatExchangerWall1.WT1, UtubeColdLeg.CTh) annotation (Line(
       points={{47.2,-41},{58,-41},{58,-41.5},{62.8,-41.5}},
       color={191,95,0},
       thickness=0.5));
   connect(DownComerGV.C2, volumeA.Ce1)      annotation (Line(points={{94.5,-72},
-          {94.5,-108},{1,-108},{1,-100}}, color={0,0,255}));
-  connect(volumeA.Cs, RiserGV.C1)
-                                annotation (Line(points={{1,-80},{0.65,-80},{
-          0.65,-73}}, color={0,0,255}));
+          {94.5,-128},{1,-128},{1,-120}}, color={0,0,255}));
+  connect(volumeA.Cs1, DPnulle_Tcirc.C1) annotation (Line(points={{1,-100},{1,-92}}, color={0,0,255}));
+  connect(DPnulle_Tcirc.C2, RiserGV.C1) annotation (Line(points={{1,-80},{0.65,-80},{0.65,-73}}, color={0,0,255}));
+  connect(volumeA.Cs2, fluidOutletI_purge) annotation (Line(points={{11,-110},{130,-110},{130,-120},{150,-120}}, color={0,0,255}));
   connect(RiserGV.C2, volumeA1.Ce1)
                                   annotation (Line(points={{0.65,-9},{
           -6.12303e-016,-9},{-6.12303e-016,8}}, color={0,0,255}));
@@ -333,8 +391,7 @@ equation
           0,124},{0,149}}, color={255,0,0}));
   connect(DPSeparateurCyclone.C2, DomeGV.Cm) annotation (Line(points={{
           6.12303e-016,47},{6.12303e-016,52},{22,52},{22,64}}, color={0,0,255}));
-  connect(DomeGV.Cs, DPnulle_DomeDwnc.C1) annotation (Line(points={{22,76.9},{40,
-          76.9},{40,63},{53,63}},    color={0,0,255}));
+  connect(DomeGV.Cd, DPnulle_DomeDwnc.C1) annotation (Line(points={{22,64},{40,64},{40,63},{53,63}}, color={0,0,255}));
   connect(DomeGV.yLevel, outputReal) annotation (Line(points={{24.2,85.5},{32,85.5},
           {32,114},{-36,114},{-36,96},{-52,96}}, color={0,0,255}));
   annotation (Diagram(coordinateSystem(
@@ -348,7 +405,7 @@ equation
           extent={{-126,153},{-84,123}},
           lineColor={0,0,255},
           textString=
-               "= 1GV")}),
+               "= 1 SG")}),
     Icon(coordinateSystem(
         preserveAspectRatio=false,
         extent={{-150,-150},{150,150}},
