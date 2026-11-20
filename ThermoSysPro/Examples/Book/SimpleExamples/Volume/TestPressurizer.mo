@@ -1,8 +1,8 @@
 within ThermoSysPro.Examples.Book.SimpleExamples.Volume;
 
 model TestPressurizer
-  parameter Units.SI.Power Wch(fixed = false) = 0.29e6 "Power released by the electrical heaters";
-  parameter Real OUVfeedwaterValve(fixed = false) = 0.01 "OUV feed water valve";
+  parameter Units.SI.Power Wch(fixed = false, start = 167023.328125) "Power released by the electrical heaters";
+  parameter Real OUVfeedwaterValve(fixed = false, start = 1.56658279593103e-05) "OUV feed water valve";
   ThermoSysPro.WaterSteam.PressureLosses.ControlValve FeedwaterValve_Spray(Cv(start = 100), C1(P(start = 160e5), h_vol(start = 1270e3), Q(start = 0.3), h(start = 1270e3)), Q(fixed = false, start = 0.32), Cvmax = 5000) annotation(
     Placement(transformation(extent = {{-110, 130}, {-90, 150}}, rotation = 0)));
   ThermoSysPro.WaterSteam.PressureLosses.ControlValve SteamValve(Cv(start = 25000), Cvmax(fixed = true) = 5000, Pm(start = 15500000)) annotation(

@@ -3,13 +3,13 @@ within ThermoSysPro.Examples.SimpleExamples;
 model TestDynamicCentrifugalPump
   ThermoSysPro.InstrumentationAndControl.Blocks.Logique.Pulse Pulse1(width = 200, period = 400) annotation(
     Placement(transformation(extent = {{-100, -60}, {-80, -40}}, rotation = 0)));
-  ThermoSysPro.ElectroMechanics.Machines.SynchronousMotor Motor1(Im(start = 1800)) annotation(
+  ThermoSysPro.ElectroMechanics.Machines.SynchronousMotor Motor1(Im(start = 1754.2124), w(start = 146.60089)) annotation(
     Placement(transformation(extent = {{-80, -80}, {-60, -60}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.Machines.DynamicCentrifugalPump DynamicCentrifugalPump1(Ch(start = 300)) annotation(
+  ThermoSysPro.WaterSteam.Machines.DynamicCentrifugalPump DynamicCentrifugalPump1(Ch(start = 288.20303), w(start = 146.60089), Q(start = 655.72021), Qv(start = 0.65741438), Pm(start = 273551.16), h(start = 100032.22), C1(P(start = 249961.41), h(start = 100032.22)), C2(P(start = 297140.94), h(start = 100032.22))) annotation(
     Placement(transformation(extent = {{0, -40}, {-20, -20}}, rotation = 0)));
   ThermoSysPro.WaterSteam.Volumes.Tank Tank(ze2 = 10, zs2 = 10) annotation(
     Placement(transformation(extent = {{-20, 20}, {0, 40}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.ControlValve Valve annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.ControlValve Valve(Q(start = 655.72021), Pm(start = 273335.62), C2(P(start = 249961.41), h_vol(start = 100000))) annotation(
     Placement(transformation(extent = {{40, 20}, {60, 40}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante Constante1(k = 0.5) annotation(
     Placement(transformation(extent = {{0, 60}, {20, 80}}, rotation = 0)));

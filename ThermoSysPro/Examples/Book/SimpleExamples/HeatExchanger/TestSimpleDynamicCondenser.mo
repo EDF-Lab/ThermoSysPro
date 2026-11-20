@@ -5,6 +5,8 @@ model TestSimpleDynamicCondenser
   parameter Integer Ns1 = 80 "Nombre de mailles de la première chaine de capteurs";
   parameter Real L2 = 75 "Longueur de la deuxième chaine de capteurs";
   parameter Integer Ns2 = 1 "Nombre de mailles de la deuxième chaine de capteurs";
+  parameter Real PerteChargeCondPompe3K(fixed = false, start = 1e-3)
+    "Steam inlet pressure loss coefficient computed by initialization";
   ThermoSysPro.WaterSteam.BoundaryConditions.SinkP puitsPCaloporteur(mode = 0, P0 = 1e5, option_temperature = 2) annotation(
     Placement(transformation(extent = {{48, 30}, {88, 70}}, rotation = 0)));
   ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss PerteChargeCondPompe(K = 1e-6, Q(start = 0.598447)) annotation(
@@ -19,7 +21,7 @@ model TestSimpleDynamicCondenser
     Placement(transformation(origin = {36, 50}, extent = {{6, -10}, {-6, 10}}, rotation = 180)));
   ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss PerteChargeCondPompe2(K = 1e-6) annotation(
     Placement(transformation(origin = {-154, 49}, extent = {{6, -10}, {-6, 10}}, rotation = 180)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss PerteChargeCondPompe3(K(fixed = false) = 1e-3, Q(start = 192, fixed = true)) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss PerteChargeCondPompe3(K = PerteChargeCondPompe3K, Q(start = 192, fixed = true)) annotation(
     Placement(transformation(origin = {-120, 159}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
   WaterSteam.HeatExchangers.SimpleDynamicCondenser Condenseur(D = 0.018, V = 1000, A = 100, lambda = 0.01, ntubes = 28700, continuous_flow_reversal = true, yNiveau(signal(fixed = false, start = 1.5)), Vf0 = 0.15, steady_state = false, P(fixed = false, start = 10000)) annotation(
     Placement(transformation(extent = {{-118, 6}, {1, 116}}, rotation = 0)));

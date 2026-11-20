@@ -1,21 +1,21 @@
 within ThermoSysPro.Examples.SimpleExamples;
 
 model TestStaticDrum1
-  ThermoSysPro.WaterSteam.Junctions.StaticDrum StaticDrumTh1 annotation(
+  ThermoSysPro.WaterSteam.Junctions.StaticDrum StaticDrumTh1(P(start = 3e5), hl(start = 561000), hv(start = 2725000), Cs_sur(h_vol(start = 2725000)), Cs_purg(h_vol(start = 561000)), Ce_eco(h_vol(start = 561000))) annotation(
     Placement(transformation(extent = {{-54, 0}, {-34, 20}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLossVALI1(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLossVALI1(K = 1e-4, Pm(start = 3e5), h(start = 561000), C1(h_vol(start = 561000)), C2(h_vol(start = 561000))) annotation(
     Placement(transformation(extent = {{0, -10}, {20, 10}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLossVALI2(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLossVALI2(K = 1e-4, Pm(start = 3e5), h(start = 100000), C1(h_vol(start = 100000)), C2(h_vol(start = 561000))) annotation(
     Placement(transformation(extent = {{-80, -50}, {-60, -30}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.BoundaryConditions.SinkQ sinkP1(Q0 = 10) annotation(
+  ThermoSysPro.WaterSteam.BoundaryConditions.SinkQ sinkP1(Q0 = 10, h0 = 561000) annotation(
     Placement(transformation(extent = {{40, -10}, {60, 10}}, rotation = 0)));
   ThermoSysPro.WaterSteam.Sensors.SensorT sensorT annotation(
     Placement(transformation(extent = {{10, -82}, {30, -62}}, rotation = 0)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSource heatSource(option_temperature = 2, W0 = {2.4e8}, T0 = {290}) annotation(
     Placement(transformation(extent = {{-80, 20}, {-60, 40}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLossVALI3(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLossVALI3(K = 1e-4, Pm(start = 3e5), h(start = 2725000), C1(h_vol(start = 2725000)), C2(h_vol(start = 2725000))) annotation(
     Placement(transformation(extent = {{-20, 50}, {0, 70}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.BoundaryConditions.Sink sinkP2 annotation(
+  ThermoSysPro.WaterSteam.BoundaryConditions.Sink sinkP2(h0 = 2725000) annotation(
     Placement(transformation(extent = {{60, 50}, {80, 70}}, rotation = 0)));
   ThermoSysPro.WaterSteam.Sensors.SensorT sensorT1 annotation(
     Placement(transformation(extent = {{20, 58}, {40, 78}}, rotation = 0)));
@@ -23,7 +23,7 @@ model TestStaticDrum1
     Placement(transformation(extent = {{-26, -90}, {-6, -70}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.RefQ refQ(Q0 = 100) annotation(
     Placement(transformation(extent = {{-56, -90}, {-36, -70}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.BoundaryConditions.PlugA sourcePlug(C(h(fixed = true))) annotation(
+  ThermoSysPro.WaterSteam.BoundaryConditions.PlugA sourcePlug(h(start = 100000), C(P(start = 3e5), Q(start = 100), h(start = 100000), h_vol(start = 100000))) annotation(
     Placement(transformation(extent = {{-90, -90}, {-70, -70}}, rotation = 0)));
 equation
   connect(singularPressureLossVALI2.C2, StaticDrumTh1.Ce_eco) annotation(

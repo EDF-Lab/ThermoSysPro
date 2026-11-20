@@ -1,6 +1,7 @@
 within ThermoSysPro.Examples.SimpleExamples;
 
 model TestDynamicTwoPhaseFlowPipe
+  parameter Real dpfCorr1(fixed = false, start = 0.23963336533422905) "Friction pressure loss corrective term for dynamicTwoPhaseFlowPipe1";
   ThermoSysPro.WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe(L = 20, advection = false, P(start = {300000.0, 281934.9410206863, 263857.2951934783, 245762.87920491621, 227647.89301968267, 209508.84324088524, 191342.48510599748, 173145.77779073696, 154915.84935981245, 136649.96881108306, 118345.52340716157, 100000.0}), Q(start = {378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421, 378.2555714391421}), h(start = {71016.12237181116, 89522.1287033792, 108028.13503495205, 126534.14136650086, 145040.14769798872, 163546.15402957145, 182052.16036112772, 200558.16669267463, 219064.17302421754, 237570.17935577242, 256076.18568728055, 70825.9016030344})) annotation(
     Placement(transformation(extent = {{-10, 20}, {10, 40}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP annotation(
@@ -11,7 +12,7 @@ model TestDynamicTwoPhaseFlowPipe
     Placement(transformation(extent = {{-10, 60}, {10, 80}}, rotation = 0)));
   ThermoSysPro.Thermal.HeatTransfer.HeatExchangerWall heatExchangerWall(Ns = 10) annotation(
     Placement(transformation(extent = {{-10, 40}, {10, 60}}, rotation = 0)));
-  WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe1(L = 10, D = 0.03, dpfCorr(fixed = false, start = 0.23963336533422905) = 1, P(start = {2000000.0, 1999571.707027408, 1999140.94021676, 1998707.6248918818, 1998271.6837222823, 1997833.0364982954, 1997391.599890757, 1996715.8221090273, 1995640.018272837, 1994163.014585635, 1992283.4952231126, 1990000.0})) annotation(
+  WaterSteam.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe1(L = 10, D = 0.03, dpfCorr = dpfCorr1, P(start = {2000000.0, 1999571.707027408, 1999140.94021676, 1998707.6248918818, 1998271.6837222823, 1997833.0364982954, 1997391.599890757, 1996715.8221090273, 1995640.018272837, 1994163.014585635, 1992283.4952231126, 1990000.0}), h(start = {800000, 802000, 804000, 806000, 808000, 810000, 812000, 814000, 816000, 818000, 820000, 2000000})) annotation(
     Placement(transformation(extent = {{-40, -94}, {40, -36}}, rotation = 0)));
   WaterSteam.BoundaryConditions.SourceP sourceP1(C(Q(fixed = true, start = 1)), option_temperature = 2, mode = 0, h0 = 800e3, P0 = 2000000) annotation(
     Placement(transformation(extent = {{-90, -74}, {-70, -54}}, rotation = 0)));
