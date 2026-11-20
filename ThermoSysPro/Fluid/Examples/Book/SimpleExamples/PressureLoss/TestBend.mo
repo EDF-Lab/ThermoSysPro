@@ -1,11 +1,16 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.PressureLoss;
 
 model TestBend
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-62, -6}, {-42, 14}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP SinkP1 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP SinkP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{41, -34}, {61, -14}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.Bend Bend annotation(
+  ThermoSysPro.Fluid.PressureLosses.Bend Bend (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-8, -6}, {12, 14}}, rotation = 0)));
 equation
   connect(Bend.C2, SinkP1.C) annotation(

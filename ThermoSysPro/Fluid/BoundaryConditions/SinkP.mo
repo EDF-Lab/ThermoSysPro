@@ -1,51 +1,56 @@
 within ThermoSysPro.Fluid.BoundaryConditions;
 
 model SinkP "Multi-fluid sink with fixed pressure"
-  extends ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidTypeVariableInterface;
+
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType;
-  parameter Units.SI.AbsolutePressure P0 = 100000 "Sink pressure";
-  parameter Units.SI.Temperature T0 = 290 "Source temperature (active if option_temperature=true)" annotation(
-    Evaluate = true,
-    Dialog(enable = option_temperature));
-  parameter Units.SI.SpecificEnthalpy h0 = 100000 "Source specific enthalpy (active if option_temperature=false)" annotation(
-    Evaluate = true,
-    Dialog(enable = not option_temperature));
-  parameter Boolean option_temperature = true "true:temperature fixed - false:specific enthalpy fixed";
-  parameter Boolean diffusion = false "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
-  parameter IF97Region region = IF97Region.All_regions "IF97 regions (active for IF97 water/steam only)" annotation(
-    Evaluate = true,
-    Dialog(enable = (ftype == FluidType.WaterSteam), tab = "Fluid", group = "Fluid properties"));
+
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  parameter Units.SI.AbsolutePressure P0=100000 "Sink pressure";
+  parameter Units.SI.Temperature T0=290
+    "Source temperature (active if option_temperature=true)"
+    annotation (Evaluate=true, Dialog(enable=option_temperature));
+  parameter Units.SI.SpecificEnthalpy h0=100000
+    "Source specific enthalpy (active if option_temperature=false)"
+    annotation (Evaluate=true, Dialog(enable=not option_temperature));
+  parameter Boolean option_temperature=true
+    "true:temperature fixed - false:specific enthalpy fixed";
+  parameter Boolean diffusion=false
+    "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+  Medium.ExtraProperty SubC[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default) "Trace substances";
+  Medium.MassFraction X[Medium.nXi](start=Medium.X_default[1:Medium.nXi]) "Mass fraction of the fluid crossing the boundary of the control volume";
+
+
+public
   Units.SI.MassFlowRate Q "Fluid mass flow rate";
   Units.SI.AbsolutePressure P "Fluid pressure";
   Units.SI.SpecificEnthalpy h "Fluid specific enthalpy";
   Units.SI.Temperature T "Fluid temperature";
-  FluidType ftype "Fluid type";
-  Integer fluid = Integer(ftype) "Fluid number";
-  ThermoSysPro.Units.SI.MassFraction Xco2(start = 0.01) "CO2 mass fraction of the fluid crossing the boundary of the control volume";
-  ThermoSysPro.Units.SI.MassFraction Xh2o "H2O mass fraction of the fluid crossing the boundary of the control volume";
-  ThermoSysPro.Units.SI.MassFraction Xo2(start = 0.2) "O2 mass fraction of the fluid crossing the boundary of the control volume";
-  ThermoSysPro.Units.SI.MassFraction Xso2(start = 0) "SO2 mass fraction of the fluid crossing the boundary of the control volume";
-  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal IPressure "Fixed pressure" annotation(
-    Placement(transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}}, rotation = 180)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet C annotation(
-    Placement(transformation(extent = {{-110, -10}, {-90, 10}}, rotation = 0)));
-  InstrumentationAndControl.Connectors.InputReal ISpecificEnthalpyOrTemperature "Fixed specific enthalpy or temperature according to option_temperature" annotation(
-    Placement(transformation(origin = {0, -50}, extent = {{10, -10}, {-10, 10}}, rotation = 270)));
-protected
-  parameter Integer mode = Integer(region) - 1 "IF97 region. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
+
+public
+  ThermoSysPro.InstrumentationAndControl.Connectors.InputReal IPressure
+    "Fixed pressure"
+    annotation (Placement(transformation(
+        origin={50,0},
+        extent={{-10,-10},{10,10}},
+        rotation=180)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet C(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{-110,-10},{-90,10}}, rotation=0)));
+  InstrumentationAndControl.Connectors.InputReal              ISpecificEnthalpyOrTemperature
+    "Fixed specific enthalpy or temperature according to option_temperature"
+    annotation (Placement(transformation(
+        origin={0,-50},
+        extent={{10,-10},{-10,10}},
+        rotation=270)));
 equation
   Q = C.Q;
   C.P = P;
   C.h_vol_2 = h;
   C.diff_res_2 = 0;
   C.diff_on_2 = diffusion;
-  ftype = C.ftype;
-  Xco2 = C.Xco2;
-  Xh2o = C.Xh2o;
-  Xo2 = C.Xo2;
-  Xso2 = C.Xso2;
+
+  X = C.Xi;
+  SubC = C.SubC;
+
   if (cardinality(IPressure) == 0) then
     IPressure.signal = P0;
   end if;
@@ -60,10 +65,10 @@ equation
   end if;
   if option_temperature then
     T = ISpecificEnthalpyOrTemperature.signal;
-    h = ThermoSysPro.Properties.Fluid.SpecificEnthalpy_PT(P, T, fluid, mode, Xco2, Xh2o, Xo2, Xso2);
+    h = Medium.specificEnthalpy_pTX(p=P, T=T, X=X);
   else
     h = ISpecificEnthalpyOrTemperature.signal;
-    T = ThermoSysPro.Properties.Fluid.Temperature_Ph(P, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2);
+    T = Medium.temperature_phX(p=P, h=h, X=X);
   end if;
   annotation(
     Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Line(points = {{-90, 0}, {-40, 0}, {-58, 10}}), Line(points = {{-40, 0}, {-58, -10}}), Text(extent = {{40, 28}, {58, 8}}, textString = "P"), Rectangle(extent = {{-40, 40}, {40, -40}}, lineColor = {0, 0, 0}, fillPattern = FillPattern.Solid, fillColor = {127, 255, 0}), Text(extent = {{-94, 26}, {98, -30}}, lineColor = {0, 0, 0}, fillPattern = FillPattern.Solid, textString = "P"), Text(extent = {{12, -42}, {42, -62}}, textString = "h / T")}),

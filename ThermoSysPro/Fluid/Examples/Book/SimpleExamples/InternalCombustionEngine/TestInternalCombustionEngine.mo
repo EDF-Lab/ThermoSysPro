@@ -1,22 +1,59 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.InternalCombustionEngine;
 
 model TestInternalCombustionEngine
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+  replaceable package Medium_FlueGases = ThermoSysPro.Properties.Media.FlueGases;
+
   parameter Integer NCEL = 7;
   Combustion.BoundaryConditions.FuelSourcePQ fuelSourcePQ(Hum = 0, Xh = 0.25, Xs = 0, Xashes = 0, Xc = 0.75, Xo = 0, Xn = 0, Q0 = 0.0676, rho = 0.744, LHV = 50e6, T0(displayUnit = "K") = 299, P0 = 210300, Vol = 100) annotation(
     Placement(transformation(extent = {{-106, -81}, {-72, -43}}, rotation = 0)));
-  BoundaryConditions.SourcePQ sourceAir(Xso2 = 0, Xco2 = 0, Xh2o = 0.005, Xo2 = 0.23, Q0 = 1.9627, T0 = 30 + 273.16, option_temperature = true, ftype = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType.FlueGases, P0 = 191000) annotation(
+  BoundaryConditions.SourcePQ sourceAir(
+    redeclare package Medium = Medium_FlueGases,
+    Q0=1.9627,
+    T0=30 + 273.16,
+    option_temperature=true,
+    X0={0.765,0.23,0.005,0,0},
+    P0=191000) annotation(
     Placement(transformation(extent = {{111, -79}, {73, -45}}, rotation = 0)));
-  BoundaryConditions.Sink sink(option_temperature = true) annotation(
+  BoundaryConditions.Sink sink(
+    redeclare package Medium = Medium_FlueGases,
+    option_temperature=true) annotation(
     Placement(transformation(extent = {{0, 44}, {44, 86}}, rotation = 0)));
-  BoundaryConditions.SourcePQ SourcePQ_Water(Q0 = 15.3, h0 = 334.41e3, P0 = 410000) annotation(
+  BoundaryConditions.SourcePQ SourcePQ_Water(
+    redeclare package Medium = Medium,
+    Q0=15.3,
+    h0=334.41e3,
+    P0=410000) annotation(
     Placement(transformation(extent = {{-107, -19}, {-71, 15}}, rotation = 0)));
-  Machines.InternalCombustionEngine alternatingEngine(mechanical_efficiency_type = 2, Rmeca_nom = 0.41, Coef_Rm_a = -5.4727e-9, Coef_Rm_b = 4.9359e-5, Coef_Rm_c = 0.30814, Xpth = 0.05, MMg = 20, DPe = 1, RV = 6.45, Kc = 1.28, Kd = 1.33, Wmeca(start = 1400e3), Welec(start = 1358e3), Wcomb(start = 3.4942e6), exc(start = 1.8), Gamma = 1.2085, Tsf(start = 1088.15)) annotation(
+  Machines.InternalCombustionEngine alternatingEngine(
+    redeclare package Medium = Medium,
+    redeclare package Medium_FlueGases = Medium_FlueGases,
+    mechanical_efficiency_type=2,
+    Rmeca_nom=0.41,
+    Coef_Rm_a=-5.4727e-9,
+    Coef_Rm_b=4.9359e-5,
+    Coef_Rm_c=0.30814,
+    Xpth=0.05,
+    MMg=20,
+    DPe=1,
+    RV=6.45,
+    Kc=1.28,
+    Kd=1.33,
+    Wmeca(start=1400e3),
+    Welec(start=1358e3),
+    Wcomb(start=3.4942e6),
+    exc(start=1.8),
+    Gamma=1.2085,
+    Tsf(start=1088.15)) annotation(
     Placement(transformation(extent = {{-44, -46}, {44, 42}})));
-  BoundaryConditions.Sink Sink_Water1 annotation(
+  BoundaryConditions.Sink Sink_Water1 (redeclare package Medium =
+        Medium) annotation(
     Placement(transformation(extent = {{75, -19}, {111, 15}}, rotation = 0)));
-  PressureLosses.SingularPressureLoss singularPressureLoss annotation(
+  PressureLosses.SingularPressureLoss singularPressureLoss (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-63, -8}, {-51, 4}})));
-  PressureLosses.SingularPressureLoss singularPressureLoss1 annotation(
+  PressureLosses.SingularPressureLoss singularPressureLoss1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{51, -9}, {65, 5}})));
 equation
   connect(alternatingEngine.Cair, sourceAir.C) annotation(

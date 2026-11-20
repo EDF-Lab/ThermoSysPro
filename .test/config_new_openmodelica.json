@@ -16,7 +16,7 @@
     "libs": {
         "ThermoSysPro": {
             "path": "../../ThermoSysPro/package.mo",
-            "models_filter": "(?<!Fluid\\.)\\bExamples\\b(?!\\.Control\\b)",
+            "models_filter": "^ThermoSysPro\\.Fluid\\.Examples\\.(?!Control\\b)",
             "vars_filter": ".*\\.(T|P|Q|h)"
         }        
     }

@@ -1,19 +1,45 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.PressureLoss;
 
 model TestDynamicReliefValve
-  ThermoSysPro.Fluid.PressureLosses.DynamicReliefValve ReliefValve(mech_steady_state = false, caract = [0, 0; 0.1, 2745; 0.2, 4915; 0.3, 6391; 0.4, 7339; 0.5, 7949; 0.6, 8351; 0.7, 8625; 0.8, 8818; 0.9, 8958; 1, 9063], Cvmax = 9063, mode_caract = 1, A1 = 0.125, A2 = 0.125, z_max = 0.6, m = 100, Popen = 2000000, Q(start = 1.4404060369658185E-32)) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.PressureLosses.DynamicReliefValve ReliefValve(
+    redeclare package Medium = Medium,
+    mech_steady_state=false,
+    caract=[0,0; 0.1,2745; 0.2,4915; 0.3,6391; 0.4,7339; 0.5,7949; 0.6,8351;
+        0.7,8625; 0.8,8818; 0.9,8958; 1,9063],
+    Cvmax=9063,
+    mode_caract=1,
+    A1=0.125,
+    A2=0.125,
+    z_max=0.6,
+    m=100,
+    Popen=2000000,
+    Q(start=1.4404060369658185E-32)) annotation(
     Placement(transformation(extent = {{0, 20}, {20, 40}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe Pipe2(Pm(start = 199283), Q(start = 1335.993983016864)) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe Pipe2(
+    redeclare package Medium = Medium,
+    Pm(start=199283),
+    Q(start=1335.993983016864)) annotation(
     Placement(transformation(extent = {{40, -20}, {60, 0}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP Sink2 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP Sink2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{80, -20}, {100, 0}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe Pipe1(D = 0.4, Pm(start = 1478795.1075221882)) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe Pipe1(
+    redeclare package Medium = Medium,
+    D=0.4,
+    Pm(start=1478795.1075221882)) annotation(
     Placement(transformation(extent = {{-40, -20}, {-20, 0}}, rotation = 0)));
-  ThermoSysPro.Fluid.Volumes.VolumeD VolumeD1(P(start = 298566), h(start = 72156.6431966866)) annotation(
+  ThermoSysPro.Fluid.Volumes.VolumeD VolumeD1(
+    redeclare package Medium = Medium,
+    P(start=298566), h(start=
+          72156.6431966866)) annotation(
     Placement(transformation(extent = {{0, -20}, {20, 0}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP Sink1 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP Sink1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{40, 20}, {60, 40}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-80, -20}, {-60, 0}})));
   InstrumentationAndControl.Blocks.Sources.Rampe ramp(Duration = 200, Finalvalue = 30e5, Initialvalue = 15e5) annotation(
     Placement(transformation(extent = {{-100, 20}, {-80, 40}})));

@@ -1,11 +1,30 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestDynamicTwoPhaseFlowPipe
-  ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe1(L = 10, D = 0.03, dpfCorr(fixed = false, start = 0.2396333653343408) = 1, P(start = {2000000.0, 1999571.707027408, 1999140.94021676, 1998707.6248918818, 1998271.6837222823, 1997833.0364982954, 1997391.599890757, 1996715.8221090273, 1995640.018272837, 1994163.014585635, 1992283.4952231126, 1990000.0})) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe1(
+    redeclare package Medium = Medium,
+    inertia=false,
+    L=10,
+    D=0.03,
+    dpfCorr(
+      fixed=false,
+      start=0.2396333653343408) = 1,
+    P(start={2000000,1999571.7070274,1999140.9402168,1998707.6248919,1998271.6837223,1997833.0364983,1997391.5998908,1996715.822109,1995640.0182728,1994163.0145856,1992283.4952231,1990000})) annotation(
     Placement(transformation(extent = {{-40, -48}, {40, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP1(C(Q(fixed = true, start = 1)), option_temperature = false, h0 = 800e3, P0 = 2000000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP1(
+    redeclare package Medium = Medium,
+    C(Q(fixed=true, start=1)),
+    option_temperature=false,
+    h0=800e3,
+    P0=2000000) annotation(
     Placement(transformation(extent = {{-90, -28}, {-70, -8}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP1(option_temperature = false, h0 = 2000e3, P0 = 19.9e5) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP1(
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    h0=2000e3,
+    P0=19.9e5) annotation(
     Placement(transformation(extent = {{70, -28}, {90, -8}}, rotation = 0)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSource heatSource1(option_temperature = 2, T0 = {1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900}, W0 = {2e4, 2e4, 2e4, 2e4, 2e4, 2e4, 2e4, 2e4, 2e4, 2e4}) annotation(
     Placement(transformation(extent = {{-10, 31}, {10, 51}}, rotation = 0)));

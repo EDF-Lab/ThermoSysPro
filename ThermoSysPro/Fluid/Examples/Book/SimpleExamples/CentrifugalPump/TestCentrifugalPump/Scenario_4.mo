@@ -1,11 +1,30 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.CentrifugalPump.TestCentrifugalPump;
 
 model Scenario_4
-  ThermoSysPro.Fluid.Machines.CentrifugalPump centrifugalPump(J = 5.685, dynamic_mech_equation = true, hn_coef = {-165.23, 774.95}, rh_coef = {-0.704, 1.46}, N_nom = 4809, hn_nom_p = 662, Qv_nom_p = 0.921, mode_car_Cr = 1, w_a(start = 0.003569900907740773), C1(h(start = 650000.0)), Qv(start = 0.010949905982587188)) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Machines.CentrifugalPump centrifugalPump(
+    redeclare package Medium = Medium,
+    J=5.685,
+    dynamic_mech_equation=true,
+    hn_coef={-165.23,774.95},
+    rh_coef={-0.704,1.46},
+    N_nom=4809,
+    hn_nom_p=662,
+    Qv_nom_p=0.921,
+    mode_car_Cr=1,
+    w_a(start=0.003569900907740773),
+    C1(h(start=650000.0)),
+    Qv(start=0.010949905982587188)) annotation(
     Placement(transformation(extent = {{20, 20}, {40, 40}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourceP(Q0 = 10, h0 = 650e3, P0 = 100000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourceP(
+    redeclare package Medium = Medium,
+    Q0=10,
+    h0=650e3,
+    P0=100000) annotation(
     Placement(transformation(extent = {{-20, 20}, {0, 40}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink sinkP annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink sinkP (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{60, 20}, {80, 40}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Rampe rampe3(Duration = 1000, Starttime = 0, Initialvalue = 7.2e5, Finalvalue = 2.0e5) annotation(
     Placement(transformation(extent = {{-60, 20}, {-40, 40}}, rotation = 0)));

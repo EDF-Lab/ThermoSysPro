@@ -1,27 +1,164 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.HeatExchanger.DynamicWaterHeater;
 
 model NegativeFlow
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(option_temperature = false, P0 = 22.733e5, h0 = 2650.6e3) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP(
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    P0=22.733e5,
+    h0=2650.6e3) annotation(
     Placement(transformation(extent = {{-192, 110}, {-150, 150}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP Puit_condenseur1(option_temperature = false, P0(fixed = true) = 10e5) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP Puit_condenseur1(
+      redeclare package Medium = Medium,
+      option_temperature=false, P0(fixed=true) = 10e5) annotation(
     Placement(transformation(extent = {{124, -202}, {160, -162}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValve_eau(Q(fixed = false, start = 56), Cvmax(fixed = false) = 354.534, mode_caract = 0, Cv(start = 70, fixed = false), C1(h_vol_2(start = 800e3), h(start = 800e3))) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve ControlValve_eau(
+    redeclare package Medium = Medium,
+    Q(fixed=false, start=56),
+    Cvmax(fixed=false) = 354.534,
+    mode_caract=0,
+    Cv(start=70, fixed=false),
+    C1(h_vol_2(start=800e3), h(start=800e3))) annotation(
     Placement(transformation(extent = {{88, -186}, {108, -166}}, rotation = 0)));
-  ThermoSysPro.Fluid.HeatExchangers.DynamicWaterHeater WaterHeating(Dc = 0.016, Lc = 2.56, PasL = 0.027, PasT = 0.02338, ec = 2e-3, Rv = 1.130514, Ns = 10, DpfCorr = 1.1136, cp = 506, rho = 7780, lambda = 35, COP0l(fixed = false) = 1.23, C2ex(P(start = 2220000)), ntubes1 = 351, ntubes2 = 351, ntubes3 = 1319, L3 = 26.4, L2 = 13.2, L1 = 13.2, Wall_1(Tp(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4}), Tp1(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4}), Tp2(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4})), Wall_2(Tp(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4}), Tp1(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4}), Tp2(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4})), Wall_3(Tp(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4, 515, 515.4, 516, 516.4, 517, 517.4, 518, 518.4, 519, 519.4}), Tp1(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4, 515, 515.4, 516, 516.4, 517, 517.4, 518, 518.4, 519, 519.4}), Tp2(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4, 515, 515.4, 516, 516.4, 517, 517.4, 518, 518.4, 519, 519.4})), volumeC(h(start = 1000.65e3), P(start = 68.48e5)), WaterHeating(steady_state = true, Vertical = false, step_square = true, zl(fixed = true, start = 0.43), Kvl = 1, V = 53, Cv(P(fixed = false, start = 21.867e5), Q(fixed = false, start = 52.6)), Mp = 53227, Klp = 1500, Kvp = 1200, Kpa = 0.2, P(fixed = true, start = 2216584), hl(start = 806345), hv(start = 1063490), Tp1(start = {500, 501, 502, 503, 504, 505, 506, 507, 508, 510}), Tp2(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4}), Tp3(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4, 515, 515.4, 516, 516.4, 517, 517.4, 518, 518.4, 519, 519.4}), Tp(start = 509)), Ce1(P(start = 7100000)), pipe_1(z2 = 0.3, dynamic_mass_balance = true, simplified_dynamic_energy_balance = false, h(start = {813e3, 826e3, 850e3, 865e3, 880e3, 895e3, 905e3, 920e3, 935e3, 950e3, 965e3, 980e3}), hb(start = {813e3, 826e3, 850e3, 865e3, 880e3, 895e3, 905e3, 920e3, 935e3, 950e3, 965e3}), Q(start = {132, 132, 132, 132, 132, 132, 132, 132, 132, 132, 132}), advection = false, P(start = {6870000, 6869000, 6868000, 6867000, 6866000, 6865000, 6864000, 6863000, 6862000, 6861000, 6860000, 6859000}), Tp(start = {500, 501, 502, 503, 504, 505, 506, 507, 508, 510})), pipe_2(z2 = 0.4, dynamic_mass_balance = true, simplified_dynamic_energy_balance = false, h(start = {965e3, 980e3, 995e3, 1010e3, 1120e3, 1130e3, 1040e3, 1050e3, 1060e3, 1070e3, 1080e3, 1080e3}), hb(start = {965e3, 980e3, 995e3, 1010e3, 1120e3, 1130e3, 1040e3, 1050e3, 1060e3, 1070e3, 1080e3}), Q(start = {132, 132, 132, 132, 132, 132, 132, 132, 132, 132, 132}), advection = false, P(start = {6859000, 6859000, 6858000, 6857000, 6856000, 6855000, 6854000, 6853000, 6852000, 6851000, 6850000, 6848000}), Tp(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4})), volumeD1(h(start = 953939), P(start = 6848000)), volumeD(h(start = 812750), dynamic_mass_balance = false, P(start = 6872000)), P0c = 2200000, pipe_3(steady_state = true, z2 = 0.7, dynamic_mass_balance = true, simplified_dynamic_energy_balance = false, h(start = {813e3, 826e3, 850e3, 865e3, 880e3, 895e3, 905e3, 920e3, 935e3, 950e3, 965e3, 980e3, 995e3, 1010e3, 1120e3, 1130e3, 1040e3, 1050e3, 1060e3, 1070e3, 1080e3, 1080e3}), hb(start = {813e3, 826e3, 850e3, 865e3, 880e3, 895e3, 905e3, 920e3, 935e3, 950e3, 965e3, 980e3, 995e3, 1010e3, 1120e3, 1130e3, 1040e3, 1050e3, 1060e3, 1070e3, 1080e3}), Q(start = {492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 492, 132}), advection = false, inertia = true, P(start = {6870000, 6869000, 6868000, 6867000, 6866000, 6865000, 6864000, 6863000, 6862000, 6861000, 6860000, 6859000, 6858000, 6857000, 6856000, 6855000, 6854000, 6853000, 6852000, 6851000, 6850000, 6848000}), Tp(start = {510, 510.4, 511, 511.4, 512, 512.4, 513, 513.4, 514, 514.4, 515, 515.4, 516, 516.4, 517, 517.4, 518, 518.4, 519, 519.4})), continuous_flow_reversal = true) annotation(
+  ThermoSysPro.Fluid.HeatExchangers.DynamicWaterHeater WaterHeating(
+    redeclare package Medium = Medium,
+    redeclare package Medium_Cooling = Medium,
+    Dc=0.016,
+    Lc=2.56,
+    PasL=0.027,
+    PasT=0.02338,
+    ec=2e-3,
+    Rv=1.130514,
+    Ns=10,
+    DpfCorr=1.1136,
+    cp=506,
+    rho=7780,
+    lambda=35,
+    COP0l(fixed=false) = 1.23,
+    C2ex(P(start=2220000)),
+    ntubes1=351,
+    ntubes2=351,
+    ntubes3=1319,
+    L3=26.4,
+    L2=13.2,
+    L1=13.2,
+    Wall_1(
+      Tp(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4}),
+      Tp1(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4}),
+      Tp2(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4})),
+    Wall_2(
+      Tp(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4}),
+      Tp1(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4}),
+      Tp2(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4})),
+    Wall_3(
+      Tp(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4,   515,515.4,516,516.4,517,517.4,518,518.4,519,519.4}),
+      Tp1(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4,   515,515.4,516,516.4,517,517.4,518,518.4,519,519.4}),
+      Tp2(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4,   515,515.4,516,516.4,517,517.4,518,518.4,519,519.4})),
+    volumeC(h(start=1000.65e3), P(start=68.48e5)),
+    WaterHeating(
+      steady_state=true,
+      Vertical=false,
+      step_square=true,
+      zl(fixed=true, start=0.43),
+      Kvl=1,
+      V=53,
+      Cv(P(fixed=false, start=21.867e5), Q(fixed=false, start=52.6)),
+      Mp=53227,
+      Klp=1500,
+      Kvp=1200,
+      Kpa=0.2,
+      P(fixed=true, start=2216584),
+      hl(start=806345),
+      hv(start=1063490),
+      Tp1(start={500,501,502,503,504,505,506,507,508,510}),
+      Tp2(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4}),
+      Tp3(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4,515,515.4,516,516.4,517,517.4,518,518.4,
+            519,519.4}),
+      Tp(start=509)),
+    Ce1(P(start=7100000)),
+    pipe_1(
+      z2=0.3,
+      dynamic_mass_balance=true,
+      simplified_dynamic_energy_balance=false,
+      h(start={813e3,826e3,850e3,865e3,880e3,895e3,905e3,920e3,935e3,950e3,
+            965e3,980e3}),
+      hb(start={813e3,826e3,850e3,865e3,880e3,895e3,905e3,920e3,935e3,950e3,
+            965e3}),
+      Q(start={132,132,132,132,132,132,132,132,132,132,132}),
+      advection=false,
+      P(start={6870000,6869000,6868000,6867000,6866000,6865000,6864000,6863000,
+            6862000,6861000,6860000,6859000}),
+      Tp(start={500,501,502,503,504,505,506,507,508,510})),
+    pipe_2(
+      z2=0.4,
+      dynamic_mass_balance=true,
+      simplified_dynamic_energy_balance=false,
+      h(start={965e3,980e3,995e3,1010e3,1120e3,1130e3,1040e3,1050e3,1060e3,
+            1070e3,1080e3,1080e3}),
+      hb(start={965e3,980e3,995e3,1010e3,1120e3,1130e3,1040e3,1050e3,1060e3,
+            1070e3,1080e3}),
+      Q(start={132,132,132,132,132,132,132,132,132,132,132}),
+      advection=false,
+      P(start={6859000,6859000,6858000,6857000,6856000,6855000,6854000,6853000,
+            6852000,6851000,6850000,6848000}),
+      Tp(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4})),
+    volumeD1(h(start=953939), P(start=6848000)),
+    volumeD(
+      h(start=812750),
+      dynamic_mass_balance=false,
+      P(start=6872000)),
+    P0c=2200000,
+    pipe_3(
+      steady_state=true,
+      z2=0.7,
+      dynamic_mass_balance=true,
+      simplified_dynamic_energy_balance=false,
+      h(start={813e3,826e3,850e3,865e3,880e3,895e3,905e3,920e3,935e3,950e3,
+            965e3,980e3,995e3,1010e3,1120e3,1130e3,1040e3,1050e3,1060e3,1070e3,
+            1080e3,1080e3}),
+      hb(start={813e3,826e3,850e3,865e3,880e3,895e3,905e3,920e3,935e3,950e3,
+            965e3,980e3,995e3,1010e3,1120e3,1130e3,1040e3,1050e3,1060e3,1070e3,
+            1080e3}),
+      Q(start={492,492,492,492,492,492,492,492,492,492,492,492,492,492,492,492,
+            492,492,492,492,132}),
+      advection=false,
+      inertia=true,
+      P(start={6870000,6869000,6868000,6867000,6866000,6865000,6864000,6863000,
+            6862000,6861000,6860000,6859000,6858000,6857000,6856000,6855000,
+            6854000,6853000,6852000,6851000,6850000,6848000}),
+      Tp(start={510,510.4,511,511.4,512,512.4,513,513.4,514,514.4,515,515.4,516,
+            516.4,517,517.4,518,518.4,519,519.4})),
+    continuous_flow_reversal=true) annotation(
     Placement(transformation(extent = {{-58, -90}, {162, 96}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink Puit_condenseur2(h0 = 940.000e3) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink Puit_condenseur2(
+    redeclare package Medium = Medium,
+    h0=940.000e3) annotation(
     Placement(transformation(extent = {{-150, 22}, {-192, 66}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossWaterIn(Q(fixed = false, start = 650), K = 35) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossWaterIn(
+    redeclare package Medium = Medium,
+    Q(fixed=false, start=650),
+    K=35) annotation(
     Placement(transformation(extent = {{-99, -48}, {-79, -28}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossWaterOut(Q(fixed = false, start = 650), K = 30, C2(h_vol_1(start = 927700), h(start = 927700))) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossWaterOut(
+    redeclare package Medium = Medium,
+    Q(fixed=false, start=650), K=30,
+    C2(h_vol_1(start=927700), h(start=927700))) annotation(
     Placement(transformation(extent = {{-80, 34}, {-100, 54}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Tables.Table1DTemps Pression_eauA(Table = [0, 71.29e5; 3000, 71.29e5]) annotation(
     Placement(transformation(extent = {{-194, -8}, {-172, 14}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Tables.Table1DTemps Temperature_eauA(Table = [0, 454.46; 448, 454.46; 1155, 407.76; 2000, 407.76]) annotation(
     Placement(transformation(extent = {{-196, -88}, {-176, -68}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP1(P0 = 71.29e5, h0 = 772.09e3, T0 = 454.46, option_temperature = true) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP1(
+    redeclare package Medium = Medium,
+    P0=71.29e5,
+    h0=772.09e3,
+    T0=454.46,
+    option_temperature=true) annotation(
     Placement(transformation(extent = {{-192, -60}, {-150, -16}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.RefQ refQ(Q0 = 53) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.RefQ refQ(
+    redeclare package Medium = Medium,
+    Q0=53) annotation(
     Placement(transformation(extent = {{-115, 34}, {-135, 54}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Tables.Table1DTemps Debit_eauA(Table = [0, 624.97; 300, 624.97; 2000, -200; 3000, -200]) annotation(
     Placement(transformation(extent = {{-196, 78}, {-176, 98}}, rotation = 0)));
@@ -31,13 +168,24 @@ model NegativeFlow
     Placement(transformation(extent = {{140, -146}, {102, -110}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante Level(k = 0.43) annotation(
     Placement(transformation(extent = {{191, -140}, {169, -118}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.IdealCheckValve checkValve(C2(h_vol_1(start = 2600e3), h(start = 2600e3))) annotation(
+  ThermoSysPro.Fluid.PressureLosses.IdealCheckValve checkValve(
+      redeclare package Medium = Medium,
+      C2(h_vol_1(start=2600e3), h(start=2600e3))) annotation(
     Placement(transformation(extent = {{-100, 122}, {-84, 138}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossPurge(Q(fixed = false, start = 56), K = 1e-3, T(fixed = true, start = 461.56), Pm(start = 2220000)) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossPurge(
+    redeclare package Medium = Medium,
+    Q(fixed=false, start=56), K=1e-3,
+    T(fixed=true, start=461.56),
+    Pm(start=2220000)) annotation(
     Placement(transformation(origin = {54, -138}, extent = {{-10, -10}, {10, 10}}, rotation = 270)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Tables.Table1DTemps Pression_purge(Table = [0, 10e5; 378, 10e5; 418, 7e5; 1145, 2.9e5; 2000, 2.9e5]) annotation(
     Placement(transformation(extent = {{162, -178}, {182, -158}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe PressureLoss_Steam(Q(fixed = false, start = 650), lambda(fixed = false) = 0.03, L = 48.72, D = 0.387) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe PressureLoss_Steam(
+    redeclare package Medium = Medium,
+    Q(fixed=false, start=650),
+    lambda(fixed=false) = 0.03,
+    L=48.72,
+    D=0.387) annotation(
     Placement(transformation(extent = {{-48, 162}, {30, 98}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Tables.Table1DTemps Pression_eauA1(Table = [0, 71.29e5; 378, 71.29e5; 438, 77e5; 597, 73.8e5; 1533, 69.8e5; 2340, 68.8e5; 2500, 68.8e5]) annotation(
     Placement(transformation(extent = {{-196, -154}, {-174, -132}}, rotation = 0)));
