@@ -28,7 +28,11 @@ model TestDynamicPlateHeatExchanger_FlueGases
     Tc1(start=fill(573.15, 5)),
     Tf1(start=fill(573.15, 5)),
     Tc2(start=fill(573.15, 6)),
-    Tf2(start=fill(573.15, 6))) annotation (Placement(transformation(extent={{-10,30},{10,50}}, rotation=0)));
+    Tf2(start=fill(573.15, 6)),
+    Pc(start=linspace(4500000, 4450000, 7)),
+    Pf(start=linspace(100000, 300000, 7)),
+    Qc(start=fill(117275.047014, 6)),
+    Qf(start=fill(49585.430645, 6))) annotation (Placement(transformation(extent={{-10,30},{10,50}}, rotation=0)));
   ThermoSysPro.Fluid.BoundaryConditions.SourceP sourcePc(
     redeclare package Medium = Medium_c,
     P0=4500000,

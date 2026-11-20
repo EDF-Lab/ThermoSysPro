@@ -235,7 +235,7 @@ equation
               -96,-64},{-100,-60},{-100,-60},{98,-60},{100,-60},{96,-64},{92,
               -68},{80,-80},{60,-90},{40,-96},{20,-98},{0,-100}},
           lineColor={0,0,255},
-          fillColor= DynamicSelect({53,117,255}, if fluid==1 then {53,117,255} else if fluid==2 then {0,255,255} else if fluid==3 then {175,175,175} else if fluid==4 then {255,170,213} else if fluid==5 then {0,127,0} else if fluid==6 then {170,215,215} else {213,255,170}),
+          fillColor={53,117,255},
           fillPattern=FillPattern.Solid,
           lineThickness=0.5),
         Polygon(
