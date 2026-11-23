@@ -107,6 +107,10 @@ public
     "Liquid phase trace substances";
   Medium.ExtraProperty SubCv[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default)
     "Vapor phase trace substances";
+  Medium.ExtraProperty Jcond[Medium.nC](quantity=Medium.extraPropertiesNames)
+    "Trace flow carried by Qcond from the gas phase to the liquid phase";
+  Medium.ExtraProperty Jevap[Medium.nC](quantity=Medium.extraPropertiesNames)
+    "Trace flow carried by Qevap from the liquid phase to the gas phase";
   Medium.ExtraProperty SubCSaS[Medium.nC](quantity=Medium.extraPropertiesNames)
     "Trace modification in the trace balance equation";
   Medium.ThermodynamicState state_l "Liquid state in the pressurizer";
@@ -245,17 +249,25 @@ equation
   /* Traces composition balance equations */
   /* Equilibrium partition of the traces (Medium.relativeVolatility) applied to
      every mass transfer between phases. Each transfer removes from one phase
-     exactly what it adds to the other: the balance is exact for any volatility. */
+     exactly what it adds to the other: the balance is exact for any volatility.
+     Each transfer carries the concentration of the phase it leaves, in the
+     state given by the energy balances: Qcond is saturated liquid (hls),
+     Qevap saturated vapour (hvs), in both directions. Qevap is negative when
+     the liquid phase is subcooled (vapour of the gas phase condenses into it,
+     at C_v.Cg); Qcond is negative when the gas phase is superheated (liquid
+     of the liquid phase moves to the gas phase, at C_l.Cl). */
   xl = noEvent(max(0, min(1, (hl - hls)/(hvs - hls))));
   xv = noEvent(max(0, min(1, (hv - hls)/(hvs - hls))));
   if Medium.nC > 0 then
     C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
     C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
   end if;
+  Jcond = noEvent(max(Qcond, 0))*C_v.Cl + noEvent(min(Qcond, 0))*C_l.Cl;
+  Jevap = noEvent(max(Qevap, 0))*C_l.Cg + noEvent(min(Qevap, 0))*C_v.Cg;
   SubCSaS = SaS();
 
-  BSubCl = Cas.Q*Cas.SubC - Cex.Q*Cex.SubC + Qcond*C_v.Cl - Qevap*C_l.Cg;
-  BSubCv = Qevap*C_l.Cg - Cs.Q*Cs.SubC - Qcond*C_v.Cl;
+  BSubCl = Cas.Q*Cas.SubC - Cex.Q*Cex.SubC + Jcond - Jevap;
+  BSubCv = Jevap - Cs.Q*Cs.SubC - Jcond;
 
   if dynamic_energy_balance then
     rhol*Vl*der(SubCl) + SubCl*BQl = BSubCl;
