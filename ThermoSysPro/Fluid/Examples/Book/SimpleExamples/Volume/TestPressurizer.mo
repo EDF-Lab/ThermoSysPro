@@ -53,8 +53,8 @@ model TestPressurizer
     hl(start=1629887.98290107),
     hv(start=2596216.59571565),
     Zl(start=5.5900717167325),
-    Yw0=32.92,
-    steady_state=false,
+    Yw0=60,
+    steady_state=true,
     V=61.12,
     Rp=1.27,
     Ae=96.23,
@@ -65,9 +65,9 @@ model TestPressurizer
     Ccond=0.02,
     Cevap=0.05,
     Yw(start=32.92),
-    y(start=0.3292),
+    y(start=0.3292, fixed=true),
     P0=15500000,
-    P(start=15500000),
+    P(start=15500000, fixed=true),
     Tp(start=617.94155291055)) annotation(
     Placement(transformation(extent = {{-92, -12}, {32, 118}}, rotation = 0)));
   ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkQ1(

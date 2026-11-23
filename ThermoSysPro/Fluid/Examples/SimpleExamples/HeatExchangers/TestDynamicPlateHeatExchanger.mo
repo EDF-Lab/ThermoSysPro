@@ -17,7 +17,7 @@ model TestDynamicPlateHeatExchanger
     state_f2(p(each start=3e5)),
     Ec(
       P(start=300000),
-      Q(fixed=true, start=1036),
+      Q(start=1036),
       h(start=280050)),
     Sc(P(start=100000), h(start=275103), Q(start=1000)),
     Ef(P(start=300000), h(start=280104), Q(start=1000)),
@@ -39,9 +39,9 @@ model TestDynamicPlateHeatExchanger
     P0=300000,
     option_temperature=false,
     h0=280104) annotation (Placement(transformation(extent={{-50,10},{-30,30}}, rotation=0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkPc(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkPc(
     redeclare package Medium = Medium,
-    P0(fixed=false) = 100000,
+    Q0=1036,
     option_temperature=false,
     h0=275103) annotation (Placement(transformation(extent={{50,30},{70,50}}, rotation=0)));
   ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkPf(

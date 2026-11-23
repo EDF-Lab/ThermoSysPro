@@ -425,10 +425,10 @@ equation
     /* Flow reversal */
     if continuous_flow_reversal then
       hbc[i + 1] = ThermoSysPro.Functions.SmoothCond(Qc[i + 1]/gamma_c[i + 1], hc[i + 1], hc[i + 2], 1);
-      hbf[i + 1] = ThermoSysPro.Functions.SmoothCond(Qf[i + 1]/gamma_f[i + 1], hf[i + 1], hf[i + 2], 1);
+      hbf[i] = ThermoSysPro.Functions.SmoothCond(Qf[i]/gamma_f[i], hf[i + 1], hf[i], 1);
     else
       hbc[i + 1] = if (Qc[i + 1] > 0) then hc[i + 1] else hc[i + 2];
-      hbf[i + 1] = if (Qf[i + 1] > 0) then hf[i + 1] else hf[i + 2];
+      hbf[i] = if (Qf[i] > 0) then hf[i + 1] else hf[i];
     end if;
 
     /* Fluid thermodynamic properties */
@@ -466,7 +466,7 @@ equation
   for i in 1:N loop
     /* Pressure losses */
     Pc[i + 1] = if Qc[i] > 0 then Pc[i] - DPc[i]/N else Pc[i] + DPc[i]/N;
-    Pf[i + 1] = if Qf[i] > 0 then Pf[i] - DPf[i]/N else Pf[i] + DPf[i]/N;
+    Pf[i + 1] = if Qf[i] > 0 then Pf[i] + DPf[i]/N else Pf[i] - DPf[i]/N;
 
     qmc2[i] = noEvent(abs(Qc[i])/(max(ThermoSysPro.Properties.WaterSteam.InitLimits.ETAMIN, muc2[i])*M));
     qmf2[i] = noEvent(abs(Qf[i])/(max(ThermoSysPro.Properties.WaterSteam.InitLimits.ETAMIN, muf2[i])*M));

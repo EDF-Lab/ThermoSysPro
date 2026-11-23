@@ -58,6 +58,7 @@ protected
   Medium.C_BiPhase C_bp "Trace partition of the steam inlet mixture CvBP";
   Medium.C_BiPhase C_gct "Trace partition of the steam inlet mixture CvGCT";
   Medium.C_BiPhase C_v "Trace partition of the gas phase";
+  Medium.C_BiPhase C_l "Trace partition of the liquid phase";
 
 public
   Units.SI.Pressure P(start=10000) "Fluid average pressure";
@@ -142,6 +143,8 @@ public
     "Liquid phase trace substances";
   Medium.ExtraProperty SubCv[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default)
     "Vapor phase trace substances";
+  Medium.ExtraProperty Jcond[Medium.nC](quantity=Medium.extraPropertiesNames)
+    "Trace flow carried by Qcond from the gas phase to the liquid phase";
   Medium.ExtraProperty SubCSaS[Medium.nC](quantity=Medium.extraPropertiesNames)
     "Trace modification in the trace balance equation";
 
@@ -318,21 +321,28 @@ equation
   /* Traces composition balance equations */
   /* Equilibrium partition of the traces (Medium.relativeVolatility) applied to
      every mass transfer between phases. Each transfer removes from one phase
-     exactly what it adds to the other: the balance is exact for any volatility. */
+     exactly what it adds to the other: the balance is exact for any volatility.
+     Each transfer carries the concentration of the phase it leaves, in the
+     state given by the energy balances. Qcond is transferred at hlsat: it is
+     saturated liquid in both directions. It is negative when the tubes heat
+     the gas phase; liquid of the liquid phase then moves to the gas phase,
+     at C_l.Cl. */
   if Medium.nC > 0 then
     C_in = tracePartition(Ce.SubC, Medium.vapourQuality(state_in_l), sat.Tsat);
     C_bp = tracePartition(CvBP.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
     C_gct = tracePartition(CvGCT.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
     C_v = tracePartition(SubCv, xv, sat.Tsat);
+    C_l = tracePartition(SubCl, xl, sat.Tsat);
   end if;
+  Jcond = noEvent(max(Qcond, 0))*C_v.Cl + noEvent(min(Qcond, 0))*C_l.Cl;
   SubCSaS = SaS();
 
   /* The liquid part QcondS of the incoming steam carries the liquid share of its traces */
   BSubCl = Ce.Q*Ce.SubC - Medium.vapourQuality(state_in_l)*Ce.Q*C_in.Cg
     + CvBP.Q*CvBP.SubC + CvGCT.Q*CvGCT.SubC - Medium.vapourQuality(state_in_v)*(CvBP.Q*C_bp.Cg + CvGCT.Q*C_gct.Cg)
-    - Cl.Q*Cl.SubC + Qcond*C_v.Cl;
+    - Cl.Q*Cl.SubC + Jcond;
   BSubCv = Medium.vapourQuality(state_in_v)*(CvBP.Q*C_bp.Cg + CvGCT.Q*C_gct.Cg)
-    + Medium.vapourQuality(state_in_l)*Ce.Q*C_in.Cg - Qcond*C_v.Cl;
+    + Medium.vapourQuality(state_in_l)*Ce.Q*C_in.Cg - Jcond;
 
   if dynamic_energy_balance then
     rhol*Vl*der(SubCl) + SubCl*BQl = BSubCl;
