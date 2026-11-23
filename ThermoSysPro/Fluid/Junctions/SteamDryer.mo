@@ -6,6 +6,7 @@ model SteamDryer "Steam dryer"
 
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = Cev.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
+  replaceable function tracePartition = Medium.equilibriumPartition constrainedby Medium.partialPartition "Liquid/vapour partition law of the traces (default: phase equilibrium)" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   parameter Real eta=1 "Steam dryer efficiency (0 <= eta <= 1)";
   parameter Boolean continuous_flow_reversal=false
     "true: continuous flow reversal - false: discontinuous flow reversal";
@@ -74,7 +75,7 @@ equation
      outlet keeps the liquid not removed by the dryer (eta < 1): it carries the mixture
      concentration at its own vapor mass fraction xsv. The liquid outlet follows from the balance. */
   if Medium.nC > 0 then
-    C_e = Medium.equilibriumPartition(Cev.SubC, xe, sat.Tsat);
+    C_e = tracePartition(Cev.SubC, xe, sat.Tsat);
   end if;
   xsv = noEvent(if (xe > 0) then xe/(1 - eta*(1 - xe)) else 0);
   Csv.SubC = xsv*C_e.Cg + (1 - xsv)*C_e.Cl;

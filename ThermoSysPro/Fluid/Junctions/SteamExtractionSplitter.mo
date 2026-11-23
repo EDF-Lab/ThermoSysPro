@@ -5,6 +5,7 @@ model SteamExtractionSplitter "Splitter for steam extraction"
 
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = Ce.SubC) annotation (choicesAllMatching=true,Dialog(tab="Fluid", group="Medium"));
+  replaceable function tracePartition = Medium.equilibriumPartition constrainedby Medium.partialPartition "Liquid/vapour partition law of the traces (default: phase equilibrium)" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Real alpha = 1
     "Vapor mass fraction at the extraction/Vapor mass fraction at the inlet (0 <= alpha <= 1)";
@@ -61,7 +62,7 @@ equation
      carries the mixture concentration at its vapor mass fraction x_ex = alpha*xe.
      The main outlet follows from the balance. */
   if Medium.nC > 0 then
-    C_e = Medium.equilibriumPartition(Ce.SubC, xe, sat.Tsat);
+    C_e = tracePartition(Ce.SubC, xe, sat.Tsat);
   end if;
   Cex.SubC = x_ex*C_e.Cg + (1 - x_ex)*C_e.Cl;
 

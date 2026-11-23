@@ -4,6 +4,7 @@ model TwoPhaseCavityOnePipe "TwoPhaseCavity for one shell pass "
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
   replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialTwoPhaseThermoSysProMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
   replaceable function SaS = Medium.noSaS(SubC = SubCv) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function tracePartition = Medium.equilibriumPartition constrainedby Medium.partialPartition "Liquid/vapour partition law of the traces (default: phase equilibrium)" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
 
   parameter Boolean Vertical=true "true: vertical cylinder - false: horizontal cylinder";
   parameter Units.SI.Radius R=1.05 "Radius of the Cavity cross-sectional area";
@@ -327,11 +328,11 @@ equation
      the gas phase; liquid of the liquid phase then moves to the gas phase,
      at C_l.Cl. */
   if Medium.nC > 0 then
-    C_in = Medium.equilibriumPartition(Ce.SubC, Medium.vapourQuality(state_in_l), sat.Tsat);
-    C_bp = Medium.equilibriumPartition(CvBP.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
-    C_gct = Medium.equilibriumPartition(CvGCT.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
-    C_v = Medium.equilibriumPartition(SubCv, xv, sat.Tsat);
-    C_l = Medium.equilibriumPartition(SubCl, xl, sat.Tsat);
+    C_in = tracePartition(Ce.SubC, Medium.vapourQuality(state_in_l), sat.Tsat);
+    C_bp = tracePartition(CvBP.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
+    C_gct = tracePartition(CvGCT.SubC, Medium.vapourQuality(state_in_v), sat.Tsat);
+    C_v = tracePartition(SubCv, xv, sat.Tsat);
+    C_l = tracePartition(SubCl, xl, sat.Tsat);
   end if;
   Jcond = noEvent(max(Qcond, 0))*C_v.Cl + noEvent(min(Qcond, 0))*C_l.Cl;
   SubCSaS = SaS();
