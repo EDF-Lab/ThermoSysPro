@@ -1,66 +1,62 @@
 within ThermoSysPro.Fluid.Volumes;
-
 model VolumeC "Mixing volume with 3 inlets and 1 outlet"
-  extends ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidTypeParameterInterface;
+
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
-  parameter Boolean dynamic_energy_balance = true "true: dynamic energy balance equation - false: static energy balance equation";
-  parameter Units.SI.Volume V = 1 "Volume (active if dynamic_energy_balance=true)" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_energy_balance));
-  parameter Boolean dynamic_mass_balance = false "true: dynamic mass balance equation - false: static mass balance equation (active if the fluid is compressible and if dynamic_energy_balance=true)" annotation(
-    Evaluate = true,
-    Dialog(enable = isCompressible and dynamic_energy_balance));
-  parameter Boolean steady_state = true "true: start from steady state - false: start from (P0, h0) (active if dynamic_energy_balance=true)" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_energy_balance));
-  parameter Units.SI.AbsolutePressure P0 = 1e5 "Initial fluid pressure (active if the fluid is compressible, and if dynamic_energy_balance=true and dynamic_mass_balance=true and steady_state=false)" annotation(
-    Evaluate = true,
-    Dialog(enable = isCompressible and dynamic_energy_balance and dynamic_mass_balance and not steady_state));
-  parameter Units.SI.SpecificEnthalpy h0 = 1e5 "Initial fluid specific enthalpy (active if dynamic_energy_balance=true and steady_state=false)" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_energy_balance and not steady_state));
-  parameter Boolean continuous_flow_reversal = false "true: continuous flow reversal - false: discontinuous flow reversal";
-  parameter Boolean diffusion = false "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
-  parameter Units.SI.Density p_rho = 0 "If > 0, fixed fluid density" annotation(
-    Evaluate = true,
-    Dialog(tab = "Fluid", group = "Fluid properties"));
-  parameter IF97Region region = IF97Region.All_regions "IF97 region (active for IF97 water/steam only)" annotation(
-    Evaluate = true,
-    Dialog(enable = (ftype == FluidType.WaterSteam), tab = "Fluid", group = "Fluid properties"));
-  parameter Boolean dynamic_composition_balance = false "<html>true: dynamic fluid composition balance equation <br>false: static fluid composition balance equation (active for flue gases)</html>" annotation(
-    Evaluate = true,
-    Dialog(enable = (ftype == FluidType.FlueGases), tab = "Fluid", group = "Fluid properties"));
-  parameter ThermoSysPro.Units.SI.MassFraction Xco20 = 0.0 "Initial CO2 mass fraction" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_composition_balance, tab = "Fluid", group = "Initial composition values (active for flue gases only if dynamic_composition_balance=true)"));
-  parameter ThermoSysPro.Units.SI.MassFraction Xh2o0 = if ftype == FluidType.FlueGases then 0.05 else 0 "Initial H20 mass fraction" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_composition_balance, tab = "Fluid", group = "Initial composition values (active for flue gases only if dynamic_composition_balance=true)"));
-  parameter ThermoSysPro.Units.SI.MassFraction Xo20 = 0.23 "Initial O2 mass fraction" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_composition_balance, tab = "Fluid", group = "Initial composition values (active for flue gases only if dynamic_composition_balance=true)"));
-  parameter ThermoSysPro.Units.SI.MassFraction Xso20 = 0 "Initial SO2 mass fraction" annotation(
-    Evaluate = true,
-    Dialog(enable = dynamic_composition_balance, tab = "Fluid", group = "Initial composition values (active for flue gases only if dynamic_composition_balance=true)"));
+
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  replaceable function SaS = Medium.noSaS(SubC=SubC) annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  parameter Boolean dynamic_energy_balance=true
+    "true: dynamic energy balance equation - false: static energy balance equation";
+  parameter Units.SI.Volume V=1
+    "Volume (active if dynamic_energy_balance=true)"
+    annotation (Evaluate=true, Dialog(enable=dynamic_energy_balance));
+  parameter Boolean dynamic_mass_balance=false
+    "true: dynamic mass balance equation - false: static mass balance equation (active if the fluid is compressible and if dynamic_energy_balance=true)" annotation(Evaluate=true, Dialog(enable=isCompressible and dynamic_energy_balance));
+  parameter Boolean steady_state=true
+    "true: start from steady state - false: start from (P0, h0) (active if dynamic_energy_balance=true)" annotation(Evaluate=true, Dialog(enable=dynamic_energy_balance));
+  parameter Units.SI.AbsolutePressure P0=1e5
+    "Initial fluid pressure (active if the fluid is compressible, and if dynamic_energy_balance=true and dynamic_mass_balance=true and steady_state=false)"
+    annotation (Evaluate=true, Dialog(enable=isCompressible and
+          dynamic_energy_balance and dynamic_mass_balance and not steady_state));
+  parameter Units.SI.SpecificEnthalpy h0=1e5
+    "Initial fluid specific enthalpy (active if dynamic_energy_balance=true and steady_state=false)"
+    annotation (Evaluate=true, Dialog(enable=dynamic_energy_balance and not
+          steady_state));
+  parameter Boolean continuous_flow_reversal=false
+    "true: continuous flow reversal - false: discontinuous flow reversal";
+  parameter Boolean diffusion=false
+    "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+  parameter Units.SI.Density p_rho=0 "If > 0, fixed fluid density"
+    annotation (Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
+  parameter Boolean dynamic_composition_balance=false
+    "<html>true: dynamic fluid composition balance equation <br>false: static fluid composition balance equation (active for flue gases)</html>" annotation(Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
+  parameter Medium.MassFraction X0[Medium.nX]=Medium.X_default "Initial composition values" annotation (Evaluate=true, Dialog(
+      enable=dynamic_composition_balance,
+      tab="Fluid",
+      group="Medium"));
+
+protected
+  constant Boolean isCompressible = Medium.isCompressible;
+  parameter Units.SI.MassFlowRate gamma0=1.e-4
+    "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
+
+public
   Units.SI.Temperature T "Fluid temperature";
   Units.SI.AbsolutePressure P(start = 1.e5) "Fluid pressure";
   Units.SI.SpecificEnthalpy h(start = 100000) "Fluid specific enthalpy";
   Units.SI.Density rho(start = 998) "Fluid density";
   Units.SI.MassFlowRate BQ "Right hand side of the mass balance equation";
   Units.SI.Power BH "Right hand side of the energy balance equation";
-  Units.SI.DerDensityByPressure ddph "density derivative wrt pressure at constant specific enthalpy";
-  Units.SI.DerDensityByEnthalpy ddhp "density derivative wrt specific enthalpy at constant pressure";
-  FluidType fluids[5] "Fluids mixing in volume";
-  Units.SI.MassFlowRate BXco2 "Right hand side of the CO2 balance equation";
-  Units.SI.MassFlowRate BXh2o "Right hand side of the H2O balance equation";
-  Units.SI.MassFlowRate BXo2 "Right hand side of the O2 balance equation";
-  Units.SI.MassFlowRate BXso2 "Right hand side of the SO2 balance equation";
-  ThermoSysPro.Units.SI.MassFraction Xco2 "CO2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xh2o "H20 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xo2 "O2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xso2 "SO2 mass fraction";
+  Units.SI.DerDensityByPressure ddph
+    "density derivative wrt pressure at constant specific enthalpy";
+  Units.SI.DerDensityByEnthalpy ddhp
+    "density derivative wrt specific enthalpy at constant pressure";
+  Units.SI.MassFlowRate BX[Medium.nXi] "Right hand side of the X balance equation";
+  Medium.MassFraction X[Medium.nXi](start=Medium.X_default[1:Medium.nXi]) "Fluid mass fraction";
+  Medium.ExtraProperty BSubC[Medium.nC](quantity=Medium.extraPropertiesNames) "Right hand side of the trace balance equation";
+  Medium.ExtraProperty SubC[Medium.nC](quantity=Medium.extraPropertiesNames, start=Medium.C_default) "Fluid trace substances";
+  Medium.ExtraProperty SubCSaS[Medium.nC](quantity=Medium.extraPropertiesNames) "Trace modification in the trace balance equation";
+  Medium.ThermodynamicState state;
   Units.SI.Power Je1 "Thermal power diffusion from inlet e1";
   Units.SI.Power Je2 "Thermal power diffusion from inlet e2";
   Units.SI.Power Je3 "Thermal power diffusion from inlet e3";
@@ -74,19 +70,18 @@ model VolumeC "Mixing volume with 3 inlets and 1 outlet"
   Real re2 "Value of r(Q/gamma) for inlet e2";
   Real re3 "Value of r(Q/gamma) for inlet e3";
   Real rs "Value of r(Q/gamma) for outlet s";
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce1 annotation(
-    Placement(transformation(extent = {{-110, -10}, {-90, 10}}, rotation = 0), iconTransformation(extent = {{-110, -10}, {-90, 10}})));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce2 annotation(
-    Placement(transformation(extent = {{-10, 90}, {10, 110}}, rotation = 0), iconTransformation(extent = {{-10, 90}, {10, 110}})));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Cs annotation(
-    Placement(transformation(extent = {{90, -10}, {110, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce3 annotation(
-    Placement(transformation(extent = {{-10, -110}, {10, -90}}), iconTransformation(extent = {{-10, -110}, {10, -90}})));
-protected
-  constant Units.SI.SpecificEnthalpy hr = 2501569 "Water/steam reference specific enthalpy at 0.01°C";
-  parameter Boolean flue_gases = (ftype == FluidType.FlueGases) "Flue gases";
-  parameter Units.SI.MassFlowRate gamma0 = 1.e-4 "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  parameter Integer mode = Integer(region) - 1 "IF97 region. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
+
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce1(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{-110,-10},{-90,10}}, rotation=0),
+        iconTransformation(extent={{-110,-10},{-90,10}})));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce2(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{-10,90},{10,110}}, rotation=0),
+        iconTransformation(extent={{-10,90},{10,110}})));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Cs(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{90,-10},{110,10}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce3(redeclare package Medium = Medium) annotation (Placement(transformation(
+          extent={{-10,-110},{10,-90}}), iconTransformation(extent={{-10,-110},{
+            10,-90}})));
 initial equation
   if dynamic_energy_balance and dynamic_mass_balance then
     if steady_state then
@@ -102,19 +97,12 @@ initial equation
       h = h0;
     end if;
   end if;
-  if flue_gases then
-    if dynamic_composition_balance then
-      if steady_state then
-        der(Xco2) = 0;
-        der(Xh2o) = 0;
-        der(Xo2) = 0;
-        der(Xso2) = 0;
-      else
-        Xco2 = Xco20;
-        Xh2o = Xh2o0;
-        Xo2 = Xo20;
-        Xso2 = Xso20;
-      end if;
+
+  if dynamic_composition_balance then
+    if steady_state then
+      der(X) = fill(0,Medium.nX);
+    else
+      X = X0[1:Medium.nXi];
     end if;
   end if;
 equation
@@ -122,25 +110,16 @@ equation
   if dynamic_energy_balance or dynamic_mass_balance then
     assert(V > 0, "Volume non-positive");
   end if;
-/* Check that incoming fluids are compatible with fluid in volume */
-  fluids[1] = ftype;
-  fluids[2] = Ce1.ftype;
-  fluids[3] = Ce2.ftype;
-  fluids[4] = Ce3.ftype;
-  fluids[5] = Cs.ftype;
-  assert(ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.isCompatible(fluids), "VolumeC: fluids mixing in volume are not compatible with each other");
-/* Unconnected connectors */
+
+  /* Unconnected connectors */
   if (cardinality(Ce1) == 0) then
     Ce1.Q = 0;
     Ce1.h = 1.e5;
     Ce1.h_vol_1 = 1.e5;
     Ce1.diff_res_1 = 0;
     Ce1.diff_on_1 = false;
-    Ce1.ftype = ftype;
-    Ce1.Xco2 = 0;
-    Ce1.Xh2o = 0;
-    Ce1.Xo2 = 0;
-    Ce1.Xso2 = 0;
+    Ce1.Xi = Medium.X_default[1:Medium.nXi];
+    Ce1.SubC = Medium.C_default;
   end if;
   if (cardinality(Ce2) == 0) then
     Ce2.Q = 0;
@@ -148,11 +127,8 @@ equation
     Ce2.h_vol_1 = 1.e5;
     Ce2.diff_res_1 = 0;
     Ce2.diff_on_1 = false;
-    Ce2.ftype = ftype;
-    Ce2.Xco2 = 0;
-    Ce2.Xh2o = 0;
-    Ce2.Xo2 = 0;
-    Ce2.Xso2 = 0;
+    Ce2.Xi = Medium.X_default[1:Medium.nXi];
+    Ce2.SubC = Medium.C_default;
   end if;
   if (cardinality(Ce3) == 0) then
     Ce3.Q = 0;
@@ -160,11 +136,8 @@ equation
     Ce3.h_vol_1 = 1.e5;
     Ce3.diff_res_1 = 0;
     Ce3.diff_on_1 = false;
-    Ce3.ftype = ftype;
-    Ce3.Xco2 = 0;
-    Ce3.Xh2o = 0;
-    Ce3.Xo2 = 0;
-    Ce3.Xso2 = 0;
+    Ce3.Xi = Medium.X_default[1:Medium.nXi];
+    Ce3.SubC = Medium.C_default;
   end if;
   if (cardinality(Cs) == 0) then
     Cs.Q = 0;
@@ -175,7 +148,7 @@ equation
 /* Mass balance equation */
   BQ = Ce1.Q + Ce2.Q + Ce3.Q - Cs.Q;
   if isCompressible and dynamic_energy_balance and dynamic_mass_balance then
-    V*(ddph*der(P) + ddhp*der(h - Xh2o*hr)) = BQ;
+    V*(ddph*der(P) + ddhp*der(h)) = BQ;
   else
     0 = BQ;
   end if;
@@ -183,13 +156,15 @@ equation
   P = Ce2.P;
   P = Ce3.P;
   P = Cs.P;
-/* Energy balance equation */
-  BH = Ce1.Q*(Ce1.h - Ce1.Xh2o*hr) + Ce2.Q*(Ce2.h - Ce2.Xh2o*hr) + Ce3.Q*(Ce3.h - Ce3.Xh2o*hr) - Cs.Q*(Cs.h - Cs.Xh2o*hr) + J;
+
+  /* Energy balance equation */
+  BH = Ce1.Q*Ce1.h + Ce2.Q*Ce2.h + Ce3.Q*Ce3.h - Cs.Q*Cs.h + J;
+
   if dynamic_energy_balance then
     if dynamic_mass_balance then
-      V*(((h - Xh2o*hr)*ddph - 1)*der(P) + ((h - Xh2o*hr)*ddhp + rho)*der(h - Xh2o*hr)) = BH;
+      V*((h*ddph - 1)*der(P) + (h*ddhp + rho)*der(h)) = BH;
     else
-      V*rho*der(h - Xh2o*hr) = BH;
+      V*rho*der(h) = BH;
     end if;
   else
     BH = 0;
@@ -198,35 +173,32 @@ equation
   Ce2.h_vol_2 = h;
   Ce3.h_vol_2 = h;
   Cs.h_vol_1 = h;
-/* Fluid composition balance equations */
-  BXco2 = Ce1.Xco2*Ce1.Q + Ce2.Xco2*Ce2.Q + Ce3.Xco2*Ce3.Q - Cs.Xco2*Cs.Q;
-  BXh2o = Ce1.Xh2o*Ce1.Q + Ce2.Xh2o*Ce2.Q + Ce3.Xh2o*Ce3.Q - Cs.Xh2o*Cs.Q;
-  BXo2 = Ce1.Xo2*Ce1.Q + Ce2.Xo2*Ce2.Q + Ce3.Xo2*Ce3.Q - Cs.Xo2*Cs.Q;
-  BXso2 = Ce1.Xso2*Ce1.Q + Ce2.Xso2*Ce2.Q + Ce3.Xso2*Ce3.Q - Cs.Xso2*Cs.Q;
-  if flue_gases then
-    if dynamic_composition_balance then
-      V*rho*der(Xco2) + Xco2*BQ = BXco2;
-      V*rho*der(Xh2o) + Xh2o*BQ = BXh2o;
-      V*rho*der(Xo2) + Xo2*BQ = BXo2;
-      V*rho*der(Xso2) + Xso2*BQ = BXso2;
-    else
-      Xco2*BQ = BXco2;
-      Xh2o*BQ = BXh2o;
-      Xo2*BQ = BXo2;
-      Xso2*BQ = BXso2;
-    end if;
+
+  /* Fluid composition balance equations */
+  BX = Ce1.Xi*Ce1.Q + Ce2.Xi*Ce2.Q + Ce3.Xi*Ce3.Q - Cs.Xi*Cs.Q;
+
+  if dynamic_composition_balance then
+    V*rho*der(X) + X*BQ = BX;
   else
-    Xco2 = 0;
-    Xh2o = 0;
-    Xo2 = 0;
-    Xso2 = 0;
+    X*BQ = BX;
   end if;
-  Cs.ftype = ftype;
-  Cs.Xco2 = Xco2;
-  Cs.Xh2o = Xh2o;
-  Cs.Xo2 = Xo2;
-  Cs.Xso2 = Xso2;
-/* Flow reversal */
+
+
+  /* Traces composition balance equations */
+  BSubC = Ce1.Q*Ce1.SubC + Ce2.Q*Ce2.SubC + Ce3.Q*Ce3.SubC - Cs.Q*Cs.SubC;
+
+  SubCSaS = SaS();
+  if dynamic_mass_balance then
+    V*rho*der(SubC) + SubC*BQ + V*rho*SubCSaS = BSubC;
+  else
+    V*rho*SubCSaS = BSubC;
+  end if;
+
+  Cs.SubC = SubC;
+
+  Cs.Xi = X;
+
+  /* Flow reversal */
   if continuous_flow_reversal then
     Cs.h = ThermoSysPro.Functions.SmoothCond(Cs.Q/gamma_s, Cs.h_vol_1, Cs.h_vol_2, 1);
   else
@@ -271,17 +243,21 @@ equation
   Cs.diff_on_1 = diffusion;
 /* Fluid thermodynamic properties */
   if isCompressible and dynamic_mass_balance then
-    ddph = ThermoSysPro.Properties.Fluid.Density_derp_Ph(P, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2);
-    ddhp = ThermoSysPro.Properties.Fluid.Density_derh_Ph(P, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2);
+    ddph = Medium.density_derp_h(state);
+    ddhp = Medium.density_derh_p(state);
   else
     ddph = 0;
     ddhp = 0;
   end if;
-  T = ThermoSysPro.Properties.Fluid.Temperature_Ph(P, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2);
+
+  state = Medium.setState_phX(p=P, h=h, X=X);
+
+  T = Medium.temperature(state);
+
   if (p_rho > 0) then
     rho = p_rho;
   else
-    rho = ThermoSysPro.Properties.Fluid.Density_Ph(P, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2);
+    rho = Medium.density(state);
   end if;
   annotation(
     Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Line(points = {{-90, 0}, {90, 0}}, color = {0, 0, 255}), Line(points = {{0, 90}, {0, -100}}, color = {0, 0, 255}, thickness = 0.2), Ellipse(extent = {{-60, 60}, {60, -60}}, lineColor = {0, 0, 255}, fillPattern = FillPattern.Solid, fillColor = {85, 170, 255}, lineThickness = 0.2)}),

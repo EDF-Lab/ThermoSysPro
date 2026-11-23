@@ -1,27 +1,71 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestNTUWaterHeater
-  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ Water_inlet1(Q0 = 1788.90, h0 = 760.83e3, P0 = 8270000) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ Water_inlet1(
+    redeclare package Medium = Medium,
+    Q0=1788.90,
+    h0=760.83e3,
+    P0=8270000) annotation(
     Placement(transformation(extent = {{-174, -16}, {-154, 4}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink Puit_condenseur2 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink Puit_condenseur2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{137, -16}, {157, 4}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP Steam_inlet1(option_temperature = false, P0 = 17.49e5, h0 = 2432.50e3) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP Steam_inlet1(
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    P0=17.49e5,
+    h0=2432.50e3) annotation(
     Placement(transformation(extent = {{-174, 84}, {-154, 104}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss6(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss6(
+    redeclare package Medium = Medium,
+    K=1e-4) annotation(
     Placement(transformation(extent = {{-111, -16}, {-91, 4}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss7(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss7(
+    redeclare package Medium = Medium,
+    K=1e-4) annotation(
     Placement(transformation(extent = {{-110, 84}, {-90, 104}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink Puit_condenseur3 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink Puit_condenseur3 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{136, -75}, {156, -55}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss8(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss8(
+    redeclare package Medium = Medium,
+    K=1e-4) annotation(
     Placement(transformation(extent = {{75, -16}, {95, 4}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss9(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss9(
+    redeclare package Medium = Medium,
+    K=1e-4) annotation(
     Placement(transformation(extent = {{75, -75}, {95, -55}}, rotation = 0)));
-  ThermoSysPro.Fluid.HeatExchangers.NTUWaterHeater nTUWaterHeating1(HeiF(start = 900000), HDesF(start = 900000), Hep(start = 500000), SCondDes = 5752, Ee(P(start = 82e5), h_vol_2(start = 760000), Q(start = 1790), h(start = 780000)), Ep(Q(start = 118)), Ev(P(start = 27.22e5), h_vol_2(start = 2430000)), KCond(fixed = false) = 5024, KPurge(fixed = false) = 1767, Sp(h_vol_1(start = 780.13e3), h(fixed = true, start = 780.13e3)), lambdaE(fixed = false) = 67.1, SPurge = 1458, Se(h(fixed = true, start = 872.08e3), P(start = 80.19e5, fixed = true))) annotation(
+  ThermoSysPro.Fluid.HeatExchangers.NTUWaterHeater nTUWaterHeating1(
+    redeclare package Medium_e = Medium,
+    redeclare package Medium_c = Medium,
+    HeiF(start=900000),
+    HDesF(start=900000),
+    Hep(start=500000),
+    SCondDes=5752,
+    Ee(
+      P(start=82e5),
+      h_vol_2(start=760000),
+      Q(start=1790),
+      h(start=780000)),
+    Ep(Q(start=118)),
+    Ev(P(start=27.22e5), h_vol_2(start=2430000)),
+    KCond=5024,
+    KPurge=1767,
+    Sp(h_vol_1(start=780.13e3), h(fixed=true, start=780.13e3)),
+    lambdaE=67.1,
+    SPurge=1458,
+    Se(h(fixed=true, start=872.08e3), P(start=80.19e5, fixed=true))) annotation(
     Placement(transformation(extent = {{-66, -77}, {50, 65}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss10(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLoss10(
+    redeclare package Medium = Medium,
+    K=1e-4) annotation(
     Placement(transformation(extent = {{-110, 35}, {-90, 55}}, rotation = 0)));
-  BoundaryConditions.SourceQ Drain_inlet1(Q0 = 118.02, h0 = 889.89e3) annotation(
+  BoundaryConditions.SourceQ Drain_inlet1(
+    redeclare package Medium = Medium,
+    Q0=118.02,
+    h0=889.89e3) annotation(
     Placement(transformation(extent = {{-174, 35}, {-154, 55}}, rotation = 0)));
 equation
   connect(Water_inlet1.C, singularPressureLoss6.C1) annotation(

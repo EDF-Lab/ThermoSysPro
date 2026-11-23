@@ -1,13 +1,23 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.PressureLoss;
 
 model TestThreeWayValve
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP SourceP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-90, -10}, {-70, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP1 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{70, -10}, {90, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ThreeWayValve threeWayValve(C2(Q(start = -7.902947109890763E-33)), C3(Q(start = 2716.4138702433384)), Valve1(Pm(start = 200000.0)), VolumeA1(h(start = 71016.12237181117))) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ThreeWayValve threeWayValve(
+    redeclare package Medium = Medium,
+    C2(Q(start=-7.902947109890763E-33)),
+    C3(Q(start=2716.4138702433384)),
+    Valve1(Pm(start=200000.0)),
+    VolumeA1(h(start=71016.12237181117))) annotation(
     Placement(transformation(extent = {{-10, -6}, {10, 14}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP2 annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP PuitsP2 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{70, -50}, {90, -30}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Rampe rampe annotation(
     Placement(transformation(extent = {{-50, 30}, {-30, 50}}, rotation = 0)));

@@ -1,25 +1,85 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.Volume;
 
 model TestDynamicDrum
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
   parameter ThermoSysPro.Units.xSI.Cv CvmaxWater(fixed = false, start = 670) "Maximum CV (active if mode_caract=0)";
   parameter Real LambdaPipe(fixed = false, start = 0.085) "Friction pressure loss coefficient (active if lambda_fixed=true)";
-  ThermoSysPro.Fluid.Volumes.DynamicDrum Drum(Vv(start = 39), Vertical = false, hl(start = 1454400), hv(start = 2.658e6), xv(start = 0.01), rhol(start = 670), rhov(start = 78), zl(fixed = true, start = 1.05), P0 = 13000000, P(start = 13000000, fixed = false), Tp(start = 592.6)) annotation(
+  ThermoSysPro.Fluid.Volumes.DynamicDrum Drum(
+    redeclare package Medium = Medium,
+    Vv(start=39),
+    Vertical=false,
+    hl(start=1454400),
+    hv(start=2.658e6),
+    xv(start=0.01),
+    rhol(start=670),
+    rhov(start=78),
+    zl(fixed=true, start=1.05),
+    P0=13000000,
+    P(start=13000000, fixed=false),
+    Tp(start=592.6)) annotation(
     Placement(transformation(extent = {{-61, 16}, {1, 78}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve FeedwaterValve(Cv(start = 335), Q(start = 79.5), rho(start = 888), h(start = 1400000), C1(h_vol_2(start = 1400e3), h(start = 1400e3), Q(start = 79.5), P(start = 13300000)), Cvmax = CvmaxWater, Pm(start = 13100000)) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve FeedwaterValve(
+    redeclare package Medium = Medium,
+    Cv(start=335),
+    Q(start=79.5),
+    rho(start=888),
+    h(start=1400000),
+    C1(
+      h_vol_2(start=1400e3),
+      h(start=1400e3),
+      Q(start=79.5),
+      P(start=13300000)),
+    Cvmax=CvmaxWater,
+    Pm(start=13100000)) annotation(
     Placement(transformation(extent = {{-120, 74}, {-100, 94}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve SteamValve(Cv(start = 25000), Q(start = 79.5), rho(start = 78.5), h(start = 2657930), Cvmax = 10000, Pm(start = 12900000)) annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve SteamValve(
+    redeclare package Medium = Medium,
+    Cv(start=25000),
+    Q(start=79.5),
+    rho(start=78.5),
+    h(start=2657930),
+    Cvmax=10000,
+    Pm(start=12900000)) annotation(
     Placement(transformation(extent = {{40, 74}, {60, 94}}, rotation = 0)));
-  ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe TubeEcranBoucleEvaporatoire(T0 = fill(400, 10), heb(start = {10409, 10268, 10127, 9985, 9842, 9698, 9552, 9406, 9258, 9111}), advection = false, z2 = 10, simplified_dynamic_energy_balance = false, P(start = {13007000, 13006600, 13006000, 13005500, 13005000, 13004500, 13004000, 13003000, 13002000, 13001000, 13000000, 12999990}), D = 0.03, ntubes = 1400, h(start = {1400e3, 1450e3, 1500e3, 1550e3, 1600e3, 1650e3, 1700e3, 1750e3, 1800e3, 1850e3, 1900e3, 1950e3}), L = 20, Q(start = fill(130, 11))) annotation(
+  ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe TubeEcranBoucleEvaporatoire(
+    redeclare package Medium = Medium,
+    T0=fill(400, 10),
+    heb(start={10409,10268,10127,9985,9842,9698,9552,9406,9258,9111}),
+    advection=false,
+    z2=10,
+    simplified_dynamic_energy_balance=false,
+    P(start={13007000,13006600,13006000,13005500,13005000,13004500,13004000,13003000,
+          13002000,13001000,13000000,12999990}),
+    D=0.03,
+    ntubes=1400,
+    h(start={1400e3,1450e3,1500e3,1550e3,1600e3,1650e3,1700e3,1750e3,1800e3,1850e3,
+          1900e3,1950e3}),
+    L=20,
+    Q(start=fill(130, 11))) annotation(
     Placement(transformation(origin = {6, -28}, extent = {{-10, 10}, {10, -10}}, rotation = 90)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSource SourceC3(option_temperature = 2, W0 = {1e7, 1e7, 1e7, 1e7, 1e7, 1e7, 1e7, 1e7, 1e7, 1e7}, T0 = {290, 290, 290, 290, 290, 290, 290, 290, 290, 290}) annotation(
     Placement(transformation(origin = {36, -28}, extent = {{-10, -10}, {10, 10}}, rotation = 270)));
   ThermoSysPro.Thermal.HeatTransfer.HeatExchangerWall heatExchangerWall(Ns = 10, L = 20, D = 0.03, ntubes = 1400) annotation(
     Placement(transformation(origin = {18, -28}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(L = 20, z1 = 20, C1(P(start = 130e5)), Q(fixed = true, start = 130), lambda = LambdaPipe) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(
+    redeclare package Medium = Medium,
+    L=20,
+    z1=20,
+    C1(P(start=130e5)),
+    Q(fixed=true, start=130),
+    lambda=LambdaPipe) annotation(
     Placement(transformation(origin = {-66, -28}, extent = {{10, -10}, {-10, 10}}, rotation = 90)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceQ(h0 = 1400000, option_temperature = false, P0 = 13300000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceQ(h0=1400000,
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    P0=13300000) annotation(
     Placement(transformation(extent = {{-196, 68}, {-176, 88}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP(option_temperature = false, h0 = 2.650e6, P0 = 12700000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP sinkP(
+    redeclare package Medium = Medium,
+    option_temperature=false,
+    h0=2.650e6,
+    P0=12700000) annotation(
     Placement(transformation(extent = {{115, 68}, {135, 88}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante SteamValve_O(k = 0.5) annotation(
     Placement(transformation(extent = {{20, 100}, {40, 119}}, rotation = 0)));

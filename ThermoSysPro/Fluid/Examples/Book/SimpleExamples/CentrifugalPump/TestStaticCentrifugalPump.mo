@@ -1,11 +1,18 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.CentrifugalPump;
 
 model TestStaticCentrifugalPump
-  ThermoSysPro.Fluid.Machines.StaticCentrifugalPump StaticCentrifugalPump1 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Machines.StaticCentrifugalPump StaticCentrifugalPump1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-10, -50}, {-30, -30}}, rotation = 0)));
-  ThermoSysPro.Fluid.Volumes.Tank Bache1(ze2 = 10, zs2 = 10) annotation(
+  ThermoSysPro.Fluid.Volumes.Tank Bache1(
+    redeclare package Medium = Medium,
+    ze2=10,
+    zs2=10) annotation(
     Placement(transformation(extent = {{-30, 10}, {-10, 30}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.ControlValve VanneReglante1 annotation(
+  ThermoSysPro.Fluid.PressureLosses.ControlValve VanneReglante1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{30, 10}, {50, 30}}, rotation = 0)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante Constante1(k = 0.5) annotation(
     Placement(transformation(extent = {{-10, 50}, {10, 70}}, rotation = 0)));

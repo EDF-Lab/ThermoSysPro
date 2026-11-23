@@ -1,13 +1,30 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.GasTurbine;
 
 model TestCombustionTurbine
+  replaceable package Medium = ThermoSysPro.Properties.Media.FlueGases;
+
   parameter Real is_eff_n1(fixed = false, start = 0.85) "Nominal isentropic efficiency";
   parameter Real Qred1(fixed = false, start = 0.01) "Reduced mass flow rate";
-  ThermoSysPro.Fluid.Machines.CombustionTurbine CombustionTurbine(tau_n = 0.065, is_eff_n = is_eff_n1, Qred = Qred1, Pe(fixed = true, start = 1500000), Ts(fixed = true, start = 830)) annotation(
+  ThermoSysPro.Fluid.Machines.CombustionTurbine CombustionTurbine(
+    redeclare package Medium = Medium,
+    tau_n=0.065,
+    is_eff_n=is_eff_n1,
+    Qred=Qred1,
+    Pe(fixed=true, start=1500000),
+    Ts(fixed=true, start=830),
+    Hs(start=769796.2 + Medium.h_offset)) annotation(
     Placement(transformation(extent = {{-42, -42}, {36, 42}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceQ SourceQ1(Xso2 = 0, Q0 = 430, Xco2 = 0.06, Xh2o = 0.06, Xo2 = 0.14, T0 = 1500, ftype = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType.FlueGases, option_temperature = true) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceQ SourceQ1(
+    redeclare package Medium = Medium,
+    Q0=430,
+    T0=1500,
+    option_temperature=true,
+    X0={1 - 0.14 - 0.06 - 0.06,0.14,0.06,0.06,0}) annotation(
     Placement(transformation(extent = {{-106, -10}, {-86, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP SinkP1(P0 = 1e5) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP SinkP1(
+    redeclare package Medium = Medium,
+    P0=1e5,
+    T0=830) annotation(
     Placement(transformation(origin = {94, 0}, extent = {{10, -10}, {-10, 10}}, rotation = 180)));
   ThermoSysPro.InstrumentationAndControl.Blocks.Sources.Constante Wc1(k = -1.8e8) annotation(
     Placement(transformation(extent = {{-100, -42}, {-80, -22}}, rotation = 0)));

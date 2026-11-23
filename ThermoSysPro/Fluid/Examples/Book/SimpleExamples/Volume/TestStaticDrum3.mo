@@ -1,27 +1,64 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.Volume;
 
 model TestStaticDrum3
-  ThermoSysPro.Fluid.Junctions.StaticDrum StaticDrumTh1 annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.Junctions.StaticDrum StaticDrumTh1 (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{-30, 1}, {20, 51}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI1(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI1(
+    redeclare package Medium = Medium,
+    K=1e-4,
+    rho(start=688.4113, displayUnit="g/cm3")) annotation(
     Placement(transformation(extent = {{38, 7}, {58, 27}}, rotation = 0)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI2(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI2(
+    redeclare package Medium = Medium,
+    K=1e-4,
+    rho(start=691.7364, displayUnit="g/cm3")) annotation(
     Placement(transformation(extent = {{-58, -8}, {-38, 12}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkQ(Q0 = 10) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkQ sinkQ(
+    redeclare package Medium = Medium,
+    Q0=10) annotation(
     Placement(transformation(extent = {{74, 7}, {94, 27}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourcePQ(Q0 = 100, h0 = 1400e3, P0 = 10000000) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourcePQ sourcePQ(
+    redeclare package Medium = Medium,
+    Q0=100,
+    h0=1400e3,
+    P0=10000000) annotation(
     Placement(transformation(extent = {{-86, -8}, {-66, 12}}, rotation = 0)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSink heatSource annotation(
     Placement(transformation(origin = {-76, 26}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
-  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI3(K = 1e-4) annotation(
+  ThermoSysPro.Fluid.PressureLosses.SingularPressureLoss singularPressureLossVALI3(
+    redeclare package Medium = Medium,
+    K=1e-4,
+    rho(start=55.45212, displayUnit="g/cm3")) annotation(
     Placement(transformation(extent = {{38, 52}, {58, 72}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.Sink sink annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.Sink sink (
+    redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{74, 52}, {94, 72}}, rotation = 0)));
-  ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe(z1 = 0, rugosrel = 0.0001, D = 0.05, ntubes = 10, L = 10, z2 = 10) annotation(
+  ThermoSysPro.Fluid.HeatExchangers.DynamicTwoPhaseFlowPipe dynamicTwoPhaseFlowPipe(
+    redeclare package Medium = Medium,
+    inertia=false,
+    z1=0,
+    rugosrel=0.0001,
+    D=0.05,
+    ntubes=10,
+    L=10,
+    z2=10,
+    P(start={10053832.0,10046967.0,10041924.0,10037550.0,10033392.0,10029237.0,10024966.0,10020505.0,10015807.0,10010839.0,10005576.0,10000000.0}, each displayUnit="bar")) annotation(
     Placement(transformation(origin = {-28.5, -45.5}, extent = {{13.5, 11.5}, {-13.5, -11.5}}, rotation = 270)));
-  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(lambda(fixed = false) = 0.03, D = 0.05, ntubes = 10, L = 10, z1 = 10, Q(fixed = true, start = 30)) annotation(
+  ThermoSysPro.Fluid.PressureLosses.LumpedStraightPipe lumpedStraightPipe(
+    redeclare package Medium = Medium,
+    lambda(fixed=false) = 0.03,
+    D=0.05,
+    ntubes=10,
+    L=10,
+    z1=10,
+    Q(fixed=false, start=30)) annotation(
     Placement(transformation(origin = {20, -45}, extent = {{-14, -12}, {14, 12}}, rotation = 270)));
-  ThermoSysPro.Fluid.Volumes.VolumeA volumeA annotation(
+  ThermoSysPro.Fluid.Volumes.VolumeA volumeA (
+    redeclare package Medium = Medium,
+    steady_state=false) annotation(
     Placement(transformation(extent = {{1, -72}, {-9, -62}}, rotation = 0)));
   ThermoSysPro.Thermal.BoundaryConditions.HeatSource heatSource1(option_temperature = 2, W0 = {2e6, 2e6, 2e6, 2e6, 2e6, 2e6, 2e6, 2e6, 2e6, 2e6}, T0 = {300, 300, 300, 300, 300, 300, 300, 300, 300, 300}) annotation(
     Placement(transformation(origin = {-76, -45}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));

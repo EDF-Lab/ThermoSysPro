@@ -1,15 +1,42 @@
 within ThermoSysPro.Fluid.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestDynamicPlateHeatExchanger
-  ThermoSysPro.Fluid.HeatExchangers.DynamicPlateHeatExchanger echangeurAPlaques1D1(Ns = 5, Sc(Q(fixed = true, start = 1036)), region_c = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1, region_f = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1, Qc(start = {39464.19306563736, 39464.19140625, 39464.19140625, 39464.19140625, 39464.19140625, 39464.19140625}), hc(start = {280049.6746505721, 280050.4252984669, 280051.8112565058, 280040.0015809256, 280303.05286784086, 275103.35213299847, 70825.9016030344}), hf(start = {100000.0, 280103.55213273736, 280154.0094354263, 279724.06541591545, 289300.73217909626, 100000.0, 100000.0}), Pf(start = {300190.97994125, 300159.55033252, 300128.12100957, 300096.69221392, 300065.25892599, 300033.92449902, 300000}), hbf(start = {280076.2239838133, 280103.55213273736, 280154.0094354263, 279724.06541591545, 289300.73217909626, 100000.0}), muc2(start = {0.0004220110175304796, 0.00042196254388820765, 0.0004219131741885822, 0.00042188258281012253, 0.0004214613445406211, 0.0004289079959529233}), muf2(start = {0.0004219971888386315, 0.00042195825821082143, 0.00042188643245605134, 0.0004224986924487388, 0.00040920745505383134, 0.0009148967539000273})) annotation(
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam;
+
+  ThermoSysPro.Fluid.HeatExchangers.DynamicPlateHeatExchanger echangeurAPlaques1D1(
+    redeclare package Medium_c = Medium,
+    redeclare package Medium_f = Medium,
+    Ns=5,
+    Sc(Q(fixed=true, start=1036)),
+    Qc(start={39464.19306563736,39464.19140625,39464.19140625,39464.19140625,39464.19140625,
+          39464.19140625}),
+    hc(start={280049.6746505721,280050.4252984669,280051.8112565058,280040.0015809256,
+          280303.05286784086,275103.35213299847,70825.9016030344}),
+    hf(start={100000.0,280103.55213273736,280154.0094354263,279724.06541591545,289300.73217909626,
+          100000.0,100000.0}),
+    Pf(start={300190.97994125,300159.55033252,300128.12100957,300096.69221392,300065.25892599,
+          300033.92449902,300000}),
+    hbf(start={280076.2239838133,280103.55213273736,280154.0094354263,279724.06541591545,
+          289300.73217909626,100000.0}),
+    muc2(start={0.0004220110175304796,0.00042196254388820765,0.0004219131741885822,
+          0.00042188258281012253,0.0004214613445406211,0.0004289079959529233}),
+    muf2(start={0.0004219971888386315,0.00042195825821082143,0.00042188643245605134,
+          0.0004224986924487388,0.00040920745505383134,0.0009148967539000273})) annotation(
     Placement(transformation(extent = {{-14, 6}, {6, 26}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP2(T0 = 340, region = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SourceP sourceP2(
+      redeclare package Medium = Medium,
+      T0=340) annotation(
     Placement(transformation(extent = {{-74, 6}, {-54, 26}}, rotation = 0)));
-  BoundaryConditions.SourceP sourcePQ(region = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1, Q(start = 1084)) annotation(
+  BoundaryConditions.SourceP sourcePQ(
+      redeclare package Medium = Medium,
+      Q(start=1084)) annotation(
     Placement(transformation(extent = {{-54, -14}, {-34, 6}}, rotation = 0)));
-  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP2(P0(fixed = false) = 100000, region = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  ThermoSysPro.Fluid.BoundaryConditions.SinkP puitsP2(P0(fixed=false)=
+      100000,
+      redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{46, 6}, {66, 26}}, rotation = 0)));
-  BoundaryConditions.SinkP puitsP3(region = ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region.Region_1) annotation(
+  BoundaryConditions.SinkP puitsP3(
+      redeclare package Medium = Medium) annotation(
     Placement(transformation(extent = {{26, -14}, {46, 6}}, rotation = 0)));
 equation
   connect(sourceP2.C, echangeurAPlaques1D1.Ec) annotation(

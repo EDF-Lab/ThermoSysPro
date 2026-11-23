@@ -1,28 +1,25 @@
 within ThermoSysPro.Fluid.Junctions;
 
 model MassFlowMultiplier "Mass flow multipliier"
-  extends ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidTypeParameterInterface;
   extends ThermoSysPro.Fluid.Interfaces.IconColors;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.FluidType;
-  import ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.IF97Region;
-  parameter Real alpha = 2 "Flow multiplier";
-  parameter Boolean continuous_flow_reversal = false "true: continuous flow reversal - false: discontinuous flow reversal";
-  parameter Boolean diffusion = false "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
-  parameter Units.SI.Density p_rho = 0 "If > 0, fixed fluid density" annotation(
-    Evaluate = true,
-    Dialog(tab = "Fluid", group = "Fluid properties"));
-  parameter IF97Region region = IF97Region.All_regions "IF97 region (active for IF97 water/steam only)" annotation(
-    Evaluate = true,
-    Dialog(enable = (ftype == FluidType.WaterSteam), tab = "Fluid", group = "Fluid properties"));
-  Units.SI.AbsolutePressure P(start = 10e5) "Fluid pressure";
-  Units.SI.SpecificEnthalpy h(start = 10e5) "Fluid specific enthalpy";
+  replaceable package Medium = ThermoSysPro.Properties.Media.WaterSteam constrainedby ThermoSysPro.Properties.Media.PartialSubCMedium "Medium model" annotation (choicesAllMatching=true, Dialog(tab="Fluid", group="Medium"));
+  parameter Real alpha=2 "Flow multiplier";
+  parameter Boolean continuous_flow_reversal=false
+    "true: continuous flow reversal - false: discontinuous flow reversal";
+  parameter Boolean diffusion=false
+    "true: energy balance equation with diffusion - false: energy balance equation without diffusion";
+  parameter Units.SI.Density p_rho=0 "If > 0, fixed fluid density"
+    annotation (Evaluate=true, Dialog(tab="Fluid", group="Fluid properties"));
+
+protected
+  parameter Units.SI.MassFlowRate gamma0=1.e-4
+    "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
+
+public
+  Units.SI.AbsolutePressure P(start=10e5) "Fluid pressure";
+  Units.SI.SpecificEnthalpy h(start=10e5) "Fluid specific enthalpy";
   Units.SI.Temperature T "Fluid temperature";
-  Units.SI.Density rho(start = 998) "Fluid density";
-  FluidType fluids[3] "Fluids mixing in volume";
-  ThermoSysPro.Units.SI.MassFraction Xco2 "CO2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xh2o "H20 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xo2 "O2 mass fraction";
-  ThermoSysPro.Units.SI.MassFraction Xso2 "SO2 mass fraction";
+  Units.SI.Density rho(start=998) "Fluid density";
   Units.SI.Power Je "Thermal power diffusion from inlet e";
   Units.SI.Power Js "Thermal power diffusion from outlet s";
   Units.SI.Power J "Total thermal power diffusion";
@@ -30,21 +27,15 @@ model MassFlowMultiplier "Mass flow multipliier"
   Units.SI.MassFlowRate gamma_s "Diffusion conductance for outlet s";
   Real re "Value of r(Q/gamma) for inlet e";
   Real rs "Value of r(Q/gamma) for outlet s";
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce annotation(
-    Placement(transformation(extent = {{-110, -10}, {-90, 10}}, rotation = 0)));
-  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Cs annotation(
-    Placement(transformation(extent = {{90, -10}, {110, 10}}, rotation = 0)));
-protected
-  parameter Boolean flue_gases = (ftype == FluidType.FlueGases) "Flue gases";
-  parameter Units.SI.MassFlowRate gamma0 = 1.e-4 "Pseudo-diffusion conductance use for continuous flow reversal (active if diffusion=false and continuous_flow_reversal = true)";
-  parameter Integer mode = Integer(region) - 1 "IF97 region. 1:liquid - 2:steam - 4:saturation line - 0:automatic";
+
+public
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidInlet Ce(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{-110,-10},{-90,10}}, rotation=0)));
+  ThermoSysPro.Fluid.Interfaces.Connectors.FluidOutlet Cs(redeclare package Medium = Medium) annotation (Placement(
+        transformation(extent={{90,-10},{110,10}}, rotation=0)));
 equation
-/* Check that incoming fluids are compatible with fluid in volume */
-  fluids[1] = ftype;
-  fluids[2] = Ce.ftype;
-  fluids[3] = Cs.ftype;
-  assert(ThermoSysPro.Fluid.Interfaces.PropertyInterfaces.isCompatible(fluids), "MassFlowMultiplier: fluids mixing in volume are not compatible with each other");
-/* Mass balance equation */
+
+  /* Mass balance equation */
   0 = alpha*Ce.Q - Cs.Q;
   P = Ce.P;
   P = Cs.P;
@@ -52,17 +43,13 @@ equation
   0 = alpha*Ce.Q*Ce.h - Cs.Q*Cs.h + J;
   Ce.h_vol_2 = h;
   Cs.h_vol_1 = h;
-/* Fluid composition */
-  0 = Ce.Xco2*alpha*Ce.Q - Cs.Xco2*Cs.Q;
-  0 = Ce.Xh2o*alpha*Ce.Q - Cs.Xh2o*Cs.Q;
-  0 = Ce.Xo2*alpha*Ce.Q - Cs.Xo2*Cs.Q;
-  0 = Ce.Xso2*alpha*Ce.Q - Cs.Xso2*Cs.Q;
-  Cs.ftype = ftype;
-  Cs.Xco2 = Xco2;
-  Cs.Xh2o = Xh2o;
-  Cs.Xo2 = Xo2;
-  Cs.Xso2 = Xso2;
-/* Flow reversal */
+
+  /* Fluid composition */
+  Ce.Xi*alpha*Ce.Q = Cs.Xi*Cs.Q;
+
+  Ce.SubC*alpha*Ce.Q = Cs.SubC*Cs.Q;
+
+  /* Flow reversal */
   if continuous_flow_reversal then
     Cs.h = ThermoSysPro.Functions.SmoothCond(Cs.Q/gamma_s, Cs.h_vol_1, Cs.h_vol_2, 1);
   else
@@ -89,12 +76,14 @@ equation
   Cs.diff_res_1 = 0;
   Ce.diff_on_2 = diffusion;
   Cs.diff_on_1 = diffusion;
-/* Fluid thermodynamic properties */
-  T = ThermoSysPro.Properties.Fluid.Temperature_Ph(P, h, fluid, mode, Cs.Xco2, Cs.Xh2o, Cs.Xo2, Cs.Xso2);
+
+ /* Fluid thermodynamic properties */
+  T = Medium.temperature_phX(P, h, Cs.Xi);
+
   if (p_rho > 0) then
     rho = p_rho;
   else
-    rho = ThermoSysPro.Properties.Fluid.Density_Ph(P, h, fluid, mode, Cs.Xco2, Cs.Xh2o, Cs.Xo2, Cs.Xso2);
+    rho = Medium.density_phX(P,h,Cs.Xi);
   end if;
   annotation(
     Diagram(coordinateSystem(preserveAspectRatio = false, extent = {{-100, -100}, {100, 100}}, grid = {2, 2}), graphics = {Polygon(points = {{-100, 60}, {-100, -60}, {90, 0}, {-100, 60}}, lineColor = {0, 0, 0}, fillPattern = FillPattern.VerticalCylinder, fillColor = {255, 255, 0}), Text(extent = {{-60, 24}, {-20, -16}}, lineColor = {0, 0, 255}, fillColor = {255, 255, 0}, fillPattern = FillPattern.Solid, textString = "%alpha")}),
