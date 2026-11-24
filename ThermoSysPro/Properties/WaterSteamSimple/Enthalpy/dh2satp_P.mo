@@ -6,7 +6,7 @@ function dh2satp_P "derivative of specific enthalpy at vapor saturation wrt. pre
 protected
   h2sat_P_coef1 coef1;
   h2sat_P_coef2 coef2;
-  h2sat_P_coef2 coef3;
+  h2sat_P_coef3 coef3;
 algorithm
   if p < 8.7075e5 then
     dhp := coef1.a*coef1.b*abs(p)^(coef1.b - 1);

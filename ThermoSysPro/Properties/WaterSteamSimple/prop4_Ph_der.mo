@@ -43,6 +43,10 @@ protected
   Real cp2sat_der "Derivative of specific heat capacity at vapor saturation wrt. time";
   Units.SI.Density d "Density";
   Real d_der "Derivative of density wrt. time";
+  Units.SI.Temperature T1sat "Temperature at liquid saturation";
+  Units.SI.Temperature T2sat "Temperature at vapor saturation";
+  Real T1sat_der "Derivative of temperature at liquid saturation wrt. time";
+  Real T2sat_der "Derivative of temperature at vapor saturation wrt. time";
   Real d2xhp "Second derivative of quality wrt. enthalpy and pressure";
   Real d2xhh "Second derivative of quality wrt. enthalpy";
   Real d2xpp "Second derivative of quality wrt. pressure";
@@ -54,6 +58,10 @@ protected
   Real dd2satp_der;
   Real du1satp_der;
   Real du2satp_der;
+  Real d2u1satpp "Second derivative of specific inner energy at liquid saturation wrt. pressure, along the saturation line";
+  Real d2u2satpp "Second derivative of specific inner energy at vapor saturation wrt. pressure, along the saturation line";
+  Real vp "Derivative of specific volume wrt. pressure at constant specific enthalpy";
+  Real vp_der "Derivative of vp wrt. time";
 algorithm
   h1sat := ThermoSysPro.Properties.WaterSteamSimple.Enthalpy.h1sat_P(p);
   h2sat := ThermoSysPro.Properties.WaterSteamSimple.Enthalpy.h2sat_P(p);
@@ -67,25 +75,30 @@ algorithm
   d2xhp := -dxh^2*(dh2satp - dh1satp);
   d2xhh := 0;
   d2xpp := (-(d2h1satpp + dxp*(dh2satp - dh1satp) + x*(d2h2satpp - d2h1satpp)) - dxp*(dh2satp - dh1satp))/(h2sat - h1sat);
+// Saturation properties X(p, hsat(p)), and their first and second derivatives along the saturation line:
+// dX/dp = X_p + X_h*hsat', d2X/dp2 = X_pp + 2*X_hp*hsat' + X_hh*hsat'^2 + X_h*hsat''
   d1sat := ThermoSysPro.Properties.WaterSteamSimple.Density.d1_Ph(p, h1sat);
   d2sat := ThermoSysPro.Properties.WaterSteamSimple.Density.d2_Ph(p, h2sat);
-  d := 1/((1 - x)/d1sat + x/d2sat);
-  dd1satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd1ph_Ph(p, h1sat);
-  dd2satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2ph_Ph(p, h2sat);
-  d2d1satpp := ThermoSysPro.Properties.WaterSteamSimple.Density.d2d1pp_Ph(p, h1sat);
-  d2d2satpp := ThermoSysPro.Properties.WaterSteamSimple.Density.d2d2pp_Ph(p, h2sat);
+  dd1satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.Density.dd1hp_Ph(p, h1sat)*dh1satp;
+  dd2satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.Density.dd2hp_Ph(p, h2sat)*dh2satp;
+  d2d1satpp := ThermoSysPro.Properties.WaterSteamSimple.Density.d2d1pp_Ph(p, h1sat) + 2*ThermoSysPro.Properties.WaterSteamSimple.Density.d2d1hp_Ph(p, h1sat)*dh1satp + ThermoSysPro.Properties.WaterSteamSimple.Density.d2d1hh_Ph(p, h1sat)*dh1satp^2 + ThermoSysPro.Properties.WaterSteamSimple.Density.dd1hp_Ph(p, h1sat)*d2h1satpp;
+  d2d2satpp := ThermoSysPro.Properties.WaterSteamSimple.Density.d2d2pp_Ph(p, h2sat) + 2*ThermoSysPro.Properties.WaterSteamSimple.Density.d2d2hp_Ph(p, h2sat)*dh2satp + ThermoSysPro.Properties.WaterSteamSimple.Density.d2d2hh_Ph(p, h2sat)*dh2satp^2 + ThermoSysPro.Properties.WaterSteamSimple.Density.dd2hp_Ph(p, h2sat)*d2h2satpp;
   u1sat := ThermoSysPro.Properties.WaterSteamSimple.Energy.u1_Ph(p, h1sat);
   u2sat := ThermoSysPro.Properties.WaterSteamSimple.Energy.u2_Ph(p, h2sat);
-  du1satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du1ph_Ph(p, h1sat);
-  du2satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2ph_Ph(p, h2sat);
+  du1satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.Energy.du1hp_Ph(p, h1sat)*dh1satp;
+  du2satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.Energy.du2hp_Ph(p, h2sat)*dh2satp;
+  d2u1satpp := ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u1pp_Ph(p, h1sat) + 2*ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u1hp_Ph(p, h1sat)*dh1satp + ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u1hh_Ph(p, h1sat)*dh1satp^2 + ThermoSysPro.Properties.WaterSteamSimple.Energy.du1hp_Ph(p, h1sat)*d2h1satpp;
+  d2u2satpp := ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u2pp_Ph(p, h2sat) + 2*ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u2hp_Ph(p, h2sat)*dh2satp + ThermoSysPro.Properties.WaterSteamSimple.Energy.d2u2hh_Ph(p, h2sat)*dh2satp^2 + ThermoSysPro.Properties.WaterSteamSimple.Energy.du2hp_Ph(p, h2sat)*d2h2satpp;
   s1sat := ThermoSysPro.Properties.WaterSteamSimple.Entropy.s1_Ph(p, h1sat);
   s2sat := ThermoSysPro.Properties.WaterSteamSimple.Entropy.s2_Ph(p, h2sat);
-  ds1satp := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds1ph_Ph(p, h1sat);
-  ds2satp := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds2ph_Ph(p, h2sat);
+  ds1satp := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds1hp_Ph(p, h1sat)*dh1satp;
+  ds2satp := ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.Entropy.ds2hp_Ph(p, h2sat)*dh2satp;
   cp1sat := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.cp1_Ph(p, h1sat);
   cp2sat := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.cp2_Ph(p, h2sat);
-  dcp1satp := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp1ph_Ph(p, h1sat);
-  dcp2satp := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp2ph_Ph(p, h2sat);
+  dcp1satp := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp1hp_Ph(p, h1sat)*dh1satp;
+  dcp2satp := ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.HeatCapacity.dcp2hp_Ph(p, h2sat)*dh2satp;
+  T1sat := ThermoSysPro.Properties.WaterSteamSimple.Temperature.T1_Ph(p, h1sat);
+  T2sat := ThermoSysPro.Properties.WaterSteamSimple.Temperature.T2_Ph(p, h2sat);
 // Quality derivative
   x_der := dxp*p_der + dxh*h_der;
   der_pro.x := x_der;
@@ -101,21 +114,32 @@ algorithm
   cp1sat_der := dcp1satp*p_der;
   cp2sat_der := dcp2satp*p_der;
   der_pro.cp := -x_der*cp1sat + (1 - x)*cp1sat_der + x_der*cp2sat + x*cp2sat_der;
-// Density derivative
+// Density derivative: d = 1/v, v = (1 - x)/d1sat + x/d2sat
+  d := 1/((1 - x)/d1sat + x/d2sat);
   d1sat_der := dd1satp*p_der;
   d2sat_der := dd2satp*p_der;
-  d_der := -x_der/d1sat + (1 - x)*(-1/d1sat^2)*d1sat_der + x_der/d2sat + x*(-1/d2sat^2)*d2sat_der;
+  d_der := -d^2*(-x_der/d1sat - (1 - x)*d1sat_der/d1sat^2 + x_der/d2sat - x*d2sat_der/d2sat^2);
   der_pro.d := d_der;
 // Temperature derivative
-  der_pro.T := 0;
-//Second derivative
-  dxh_der := d2xhh*h_der;
-  dxp_der := d2xpp*p_der;
+  T1sat_der := (ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT1hp_Ph(p, h1sat)*dh1satp)*p_der;
+  T2sat_der := (ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.Temperature.dT2hp_Ph(p, h2sat)*dh2satp)*p_der;
+  der_pro.T := -x_der*T1sat + (1 - x)*T1sat_der + x_der*T2sat + x*T2sat_der;
+// Second derivatives: time derivatives of ddhp, ddph, duph, duhp as computed by prop4_Ph
+  dxh_der := d2xhp*p_der + d2xhh*h_der;
+  dxp_der := d2xpp*p_der + d2xhp*h_der;
   dd1satp_der := d2d1satpp*p_der;
   dd2satp_der := d2d2satpp*p_der;
-  der_pro.ddhp := -2*d*d_der*(-dxh/d1sat + dxh/d2sat) - d^2*(-dxh_der/d1sat - dxh*(-1/d1sat^2)*d1sat_der + dxh_der/d2sat + dxh*(-1/d2sat^2)*d2sat_der);
-  der_pro.ddph := -2*d_der*(-dxp/d1sat + (1 - x)*(-1/d1sat^2)*dd1satp + dxp/d2sat + x*(-1/d2sat^2)*dd2satp) - d^2*(-dxp_der/d1sat - dxp*(-1/d1sat^2)*d1sat_der - x_der*(-1/d1sat^2)*dd1satp + (1 - x)*(2/d1sat^2*d1sat_der)*dd1satp + (1 - x)*(-1/d1sat^2)*dd1satp_der + dxp_der/d2sat + dxp*(-1/d2sat^2)*d2sat_der + x_der*(-1/d2sat^2)*dd2satp + x*(2/d2sat^2*d2sat_der)*dd2satp + x*(-1/d2sat^2)*dd2satp_der);
+  du1satp_der := d2u1satpp*p_der;
+  du2satp_der := d2u2satpp*p_der;
+// ddhp = -d^2*dxh*(1/d2sat - 1/d1sat)
+  der_pro.ddhp := -2*d*d_der*(-dxh/d1sat + dxh/d2sat) - d^2*(-dxh_der/d1sat + dxh*d1sat_der/d1sat^2 + dxh_der/d2sat - dxh*d2sat_der/d2sat^2);
+// ddph = -d^2*vp
+  vp := -dxp/d1sat - (1 - x)*dd1satp/d1sat^2 + dxp/d2sat - x*dd2satp/d2sat^2;
+  vp_der := -dxp_der/d1sat + dxp*d1sat_der/d1sat^2 + x_der*dd1satp/d1sat^2 - (1 - x)*(dd1satp_der/d1sat^2 - 2*dd1satp*d1sat_der/d1sat^3) + dxp_der/d2sat - dxp*d2sat_der/d2sat^2 - x_der*dd2satp/d2sat^2 - x*(dd2satp_der/d2sat^2 - 2*dd2satp*d2sat_der/d2sat^3);
+  der_pro.ddph := -2*d*d_der*vp - d^2*vp_der;
+// duph = -dxp*u1sat + (1 - x)*du1satp + dxp*u2sat + x*du2satp
   der_pro.duph := -dxp_der*u1sat - dxp*u1sat_der - x_der*du1satp + (1 - x)*du1satp_der + dxp_der*u2sat + dxp*u2sat_der + x_der*du2satp + x*du2satp_der;
+// duhp = dxh*(u2sat - u1sat)
   der_pro.duhp := -dxh_der*u1sat - dxh*u1sat_der + dxh_der*u2sat + dxh*u2sat_der;
   annotation(
     Documentation(info = "## Copyright © EDF 2002 - 2025

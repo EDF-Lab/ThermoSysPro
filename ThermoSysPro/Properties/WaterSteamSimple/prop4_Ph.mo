@@ -47,14 +47,15 @@ algorithm
   pro.s := (1 - x)*s1sat + x*s2sat;
   pro.cp := (1 - x)*cp1sat + x*cp2sat;
 // Derivatives
-  dxh := 1/(h2sat - h1sat);
-  dxp := -(dh1satp + x*(dh2satp - dh1satp))/(h2sat - h1sat);
-  dd1satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd1ph_Ph(p, h1sat);
-  du1satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du1ph_Ph(p, h1sat);
-  dd2satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2ph_Ph(p, h2sat);
-  du2satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2ph_Ph(p, h2sat);
   dh1satp := ThermoSysPro.Properties.WaterSteamSimple.Enthalpy.dh1satp_P(p);
   dh2satp := ThermoSysPro.Properties.WaterSteamSimple.Enthalpy.dh2satp_P(p);
+  dxh := 1/(h2sat - h1sat);
+  dxp := -(dh1satp + x*(dh2satp - dh1satp))/(h2sat - h1sat);
+// Derivatives of the saturation properties X(p, hsat(p)) along the saturation line
+  dd1satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.Density.dd1hp_Ph(p, h1sat)*dh1satp;
+  du1satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du1ph_Ph(p, h1sat) + ThermoSysPro.Properties.WaterSteamSimple.Energy.du1hp_Ph(p, h1sat)*dh1satp;
+  dd2satp := ThermoSysPro.Properties.WaterSteamSimple.Density.dd2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.Density.dd2hp_Ph(p, h2sat)*dh2satp;
+  du2satp := ThermoSysPro.Properties.WaterSteamSimple.Energy.du2ph_Ph(p, h2sat) + ThermoSysPro.Properties.WaterSteamSimple.Energy.du2hp_Ph(p, h2sat)*dh2satp;
   pro.ddhp := -pro.d^2*(-dxh/d1sat + dxh/d2sat);
   pro.ddph := -pro.d^2*(-dxp/d1sat + (1 - x)*(-1/d1sat^2)*dd1satp + dxp/d2sat + x*(-1/d2sat^2)*dd2satp);
   pro.duph := -dxp*u1sat + (1 - x)*du1satp + dxp*u2sat + x*du2satp;

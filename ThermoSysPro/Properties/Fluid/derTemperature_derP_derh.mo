@@ -9,52 +9,42 @@ function derTemperature_derP_derh "der(Temperature) computation for all fluids (
   input Real Xh2o "H2O mass fraction";
   input Real Xo2 "O2 mass fraction";
   input Real Xso2 "SO2 mass fraction";
-  input Real der_P "Pressure time derivative (J/(kg*s))";
+  input Real der_P "Pressure time derivative (Pa/s)";
   input Real der_h "Specific Enthalpy time derivative (J/(kg*s))";
-  input Real der_Xco2 = 0 "CO2 mass fraction";
-  input Real der_Xh2o = 0 "H2O mass fraction";
-  input Real der_Xo2 = 0 "O2 mass fraction";
-  input Real der_Xso2 = 0 "SO2 mass fraction";
+  input Real der_Xco2 = 0 "CO2 mass fraction time derivative";
+  input Real der_Xh2o = 0 "H2O mass fraction time derivative";
+  input Real der_Xo2 = 0 "O2 mass fraction time derivative";
+  input Real der_Xso2 = 0 "SO2 mass fraction time derivative";
   output Real der_T "Temperature time derivative (K/s)";
-  //ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph pro annotation (extent=[-80,40; -40,80]);
-  ///annotation(derivative(order=2)=derderTemperature_derderP_derderh);
+protected
+  ThermoSysPro.Properties.WaterSteam.Common.ThermoProperties_ph der_pro "Time derivative of the IF97 properties";
+  ThermoSysPro.Properties.WaterSteamSimple.ThermoProperties_ph der_pro_simple "Time derivative of the WaterSteamSimple properties";
+  Units.SI.AbsolutePressure dP = 1e-6*max(abs(P), 1e5) "Pressure step for finite differences";
+  Units.SI.SpecificEnthalpy dh = 1e-6*max(abs(h), 1e5) "Specific enthalpy step for finite differences";
+  Real eps "Step along the mass fraction derivatives for finite differences";
 algorithm
-//   // Water/Steam
-//   if fluid==1 then
-//     pro := ThermoSysPro.Properties.WaterSteam.IF97.Water_Ph(
-//       P,
-//       h,
-//       mode);
-//     T:=pro.T;
-//
-//   // C3H3F5
-//   elseif fluid==2 then
-//     T := ThermoSysPro.Properties.C3H3F5.Temperature_Ph(P=P, h=h);
-//
-//   // FlueGas
-//   elseif fluid==3 then
-//     assert(Xco2+Xh2o+Xo2+Xso2>0, "Wrong mass fraction definition");  /// Commentaire ajouté (si fluid==2, vérifie que les fractions massiques sont bien fournies en Input)
-//     T := ThermoSysPro.Properties.FlueGases.FlueGases_T(
-//       PMF=P,
-//       HMF=h,
-//       Xco2=Xco2,
-//       Xh2o=Xh2o,
-//       Xo2=Xo2,
-//       Xso2=Xso2);
-//
-//   // MoltenSalt
-//   elseif fluid==4 then
-//     T := ThermoSysPro.Properties.MoltenSalt.Temperature_h(h=h);
-// Oil
-//elseif fluid==5 then
-  if fluid == 5 then
+  // Each branch differentiates the function called by the same branch of Temperature_Ph
+  if fluid == 1 then
+    der_pro := ThermoSysPro.Properties.WaterSteam.IF97.Water_Ph_der(p = P, h = h, mode = mode, p_der = der_P, h_der = der_h);
+    der_T := der_pro.T;
+  elseif fluid == 2 or fluid == 3 then
+    // No analytic derivative available: central finite differences of the partial derivatives
+    der_T := (Temperature_Ph(P + dP, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2) - Temperature_Ph(P - dP, h, fluid, mode, Xco2, Xh2o, Xo2, Xso2))/(2*dP)*der_P + (Temperature_Ph(P, h + dh, fluid, mode, Xco2, Xh2o, Xo2, Xso2) - Temperature_Ph(P, h - dh, fluid, mode, Xco2, Xh2o, Xo2, Xso2))/(2*dh)*der_h;
+    if fluid == 3 and max({abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)}) > 0 then
+      eps := 1e-6/max({abs(der_Xco2), abs(der_Xh2o), abs(der_Xo2), abs(der_Xso2)});
+      der_T := der_T + (Temperature_Ph(P, h, fluid, mode, Xco2 + eps*der_Xco2, Xh2o + eps*der_Xh2o, Xo2 + eps*der_Xo2, Xso2 + eps*der_Xso2) - Temperature_Ph(P, h, fluid, mode, Xco2 - eps*der_Xco2, Xh2o - eps*der_Xh2o, Xo2 - eps*der_Xo2, Xso2 - eps*der_Xso2))/(2*eps);
+    end if;
+  elseif fluid == 4 then
+    der_T := ThermoSysPro.Properties.MoltenSalt.derTemperature_derh(h = h, der_h = der_h);
+  elseif fluid == 5 then
     der_T := ThermoSysPro.Properties.Oil_TherminolVP1.Temperature_derh(h = h, der_h = der_h);
-//   // Dry Air Ideal Gas
-//   elseif fluid==6 then
-//     T := ThermoSysPro.Properties.DryAirIdealGas.Temperature_h(h=h);
+  elseif fluid == 6 then
+    der_T := ThermoSysPro.Properties.DryAirIdealGas.derTemperature_derh(h = h, der_h = der_h);
+  elseif fluid == 7 then
+    der_pro_simple := ThermoSysPro.Properties.WaterSteamSimple.SimpleWater.Water_Ph_der(p = P, h = h, mode = mode, p_der = der_P, h_der = der_h);
+    der_T := der_pro_simple.T;
   else
-    assert(false, "incorrect fluid number");
-///
+    assert(false, "derTemperature_derP_derh: incorrect fluid number");
   end if;
   annotation(
     Documentation(info = "## Copyright © EDF 2002 - 2025

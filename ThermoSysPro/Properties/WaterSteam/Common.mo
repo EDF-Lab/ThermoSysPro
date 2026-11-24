@@ -180,6 +180,7 @@ Version 1.0
     Real pt;
   protected
     Real cv "Heat capacity at constant volume";
+    Real p "Pressure";
   algorithm
     pro.d := f.d;
     pro.T := f.T;
@@ -192,6 +193,10 @@ Version 1.0
     pt := f.R*f.d*f.delta*(f.fdelta - f.tau*f.fdeltatau);
     pro.ddph := (f.d*(cv*f.d + pt))/(f.d*f.d*pd*cv + f.T*pt*pt);
     pro.ddhp := -f.d*f.d*pt/(f.d*f.d*pd*cv + f.T*pt*pt);
+// duph and duhp were not assigned: taken from ThermoSysPro.Properties.Common.helmholtzToProps_ph
+    p := f.R*f.d*f.T*f.delta*f.fdelta;
+    pro.duph := -1/pro.d + p/(pro.d*pro.d)*pro.ddph;
+    pro.duhp := 1 + p/(pro.d*pro.d)*pro.ddhp;
     annotation(
       Icon(graphics = {Ellipse(extent = {{-100, 40}, {100, -100}}, lineColor = {255, 127, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-84, -4}, {84, -52}}, lineColor = {255, 127, 0}, textString = "fonction"), Text(extent = {{-134, 104}, {142, 44}}, textString = "%name")}),
       Documentation(info = "
@@ -899,6 +904,10 @@ Version 1.0
     pro.cp := x*vap.cp + (1 - x)*liq.cp;
     pro.ddph := pro.d*(pro.d*cv/dpT + 1.0)/(dpT*pro.T);
     pro.ddhp := -pro.d*pro.d/(dpT*pro.T);
+// duph and duhp were not assigned: same definition (from u = h - p/d) as in
+// ThermoSysPro.Properties.Common.gibbsToProps_ph and ThermoSysPro.Properties.Common.helmholtzToProps_ph
+    pro.duph := -1/pro.d + p/(pro.d*pro.d)*pro.ddph;
+    pro.duhp := 1 + p/(pro.d*pro.d)*pro.ddhp;
     annotation(
       Icon(graphics = {Text(extent = {{-134, 104}, {142, 44}}, textString = "%name"), Ellipse(extent = {{-100, 40}, {100, -100}}, lineColor = {255, 127, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-84, -4}, {84, -52}}, lineColor = {255, 127, 0}, textString = "fonction")}),
       Documentation(info = "
