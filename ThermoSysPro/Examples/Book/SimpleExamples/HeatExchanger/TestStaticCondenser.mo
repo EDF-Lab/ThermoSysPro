@@ -4,7 +4,9 @@ model TestStaticCondenser
   parameter Units.SI.AbsolutePressure Pin_1(fixed = false, start = 20000) "Flow pressure at inlet 1 (sourceP)";
   parameter Units.SI.AbsolutePressure Pin_2(fixed = false, start = 20000) "Flow pressure at inlet 2 (sourceP1)";
   parameter Units.SI.AbsolutePressure Pin_3(fixed = false, start = 20000) "Flow pressure at inlet 3 (sourceP2)";
-  WaterSteam.BoundaryConditions.SinkP Puit_condenseur(P0(fixed = false) = 100000) annotation(
+  parameter Units.SI.AbsolutePressure Pout_condenseur(fixed = false, start = 100000)
+    "Condenser water outlet pressure computed by initialization";
+  WaterSteam.BoundaryConditions.SinkP Puit_condenseur(P0 = Pout_condenseur) annotation(
     Placement(transformation(extent = {{158, -15}, {178, 5}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP(option_temperature = 2, mode = 0, P0 = Pin_1, C(Q(fixed = true, start = 832.66)), h0 = 2275.10e3) annotation(
     Placement(transformation(extent = {{-100, 140}, {-80, 160}}, rotation = 0)));
@@ -26,7 +28,7 @@ model TestStaticCondenser
     Placement(transformation(extent = {{40, -100}, {60, -80}}, rotation = 0)));
   WaterSteam.HeatExchangers.StaticCondenser condenseur(SCO = 47786, z = 0, mode_ee = 1, mode_se = 1, mode_ex = 1, CPCE = 0, KCO = 3400.57, QC0 = 37700) annotation(
     Placement(transformation(extent = {{-24, -24}, {68, 74}}, rotation = 0)));
-  WaterSteam.BoundaryConditions.SourceQ Source_condenseur(h0 = 60e3, C(P(fixed = true, start = 328800)), Q0(fixed = true) = 42261) annotation(
+  WaterSteam.BoundaryConditions.SourceQ Source_condenseur(h0 = 60e3, P(start = 328800, fixed = false), Q0(fixed = true) = 42261) annotation(
     Placement(transformation(extent = {{-189, -25}, {-146, 15}}, rotation = 0)));
   WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss2(K = 1e-3) annotation(
     Placement(transformation(extent = {{-101, -15}, {-81, 5}}, rotation = 0)));

@@ -1,9 +1,10 @@
 within ThermoSysPro.Examples.SimpleExamples;
 
 model TestDynamicOnePhaseFlowPipeShell
-  WaterSteam.HeatExchangers.DynamicOnePhaseFlowShell dynamicOnePhaseFlowPipeShell(Q(start = {30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30}), Ds = 1, ntubes = 520, L = 12, P(start = {2000000, 1996000, 1993000, 1990000, 1986000, 1983000, 1980000, 1976000, 1973000, 1965000, 1955000, 1950000})) annotation(
+  parameter Units.SI.AbsolutePressure sinkP0(fixed = false, start = 1900000) "Sink pressure computed by initialization";
+  WaterSteam.HeatExchangers.DynamicOnePhaseFlowShell dynamicOnePhaseFlowPipeShell(Q(start = {500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500}), Ds = 1, ntubes = 520, L = 12, P(start = {2000000, 1996000, 1993000, 1990000, 1986000, 1983000, 1980000, 1976000, 1973000, 1965000, 1955000, 1950000}), h(start = {600000, 596000, 592000, 588000, 584000, 580000, 576000, 572000, 568000, 564000, 560000, 560000})) annotation(
     Placement(transformation(extent = {{-48, -36}, {48, 36}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.BoundaryConditions.SinkP sinkP(option_temperature = 2, P0(fixed = false) = 1900000) annotation(
+  ThermoSysPro.WaterSteam.BoundaryConditions.SinkP sinkP(option_temperature = 2, P0 = sinkP0) annotation(
     Placement(transformation(extent = {{74, -15}, {102, 15}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP(option_temperature = 2, h0 = 600e3, P0 = 2000000, Q(start = 500, fixed = true)) annotation(
     Placement(transformation(extent = {{-103, -15}, {-75, 15}}, rotation = 0)));

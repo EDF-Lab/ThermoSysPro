@@ -1,9 +1,11 @@
 within ThermoSysPro.Examples.Book.SimpleExamples.CombustionChamber;
 
 model TestGTCombustionChamber
+  parameter Real kcham1(fixed = false, start = 1)
+    "Pressure loss coefficient computed by initialization";
   ThermoSysPro.FlueGases.BoundaryConditions.Sink Puits_Fumees2 annotation(
     Placement(transformation(origin = {149, -2}, extent = {{23, -24}, {-23, 24}}, rotation = 180)));
-  Combustion.CombustionChambers.GTCombustionChamber GTCombustionChamber2(Cfg(P(fixed = true, start = 14.1e5)), kcham(fixed = false, start = 1)) annotation(
+  Combustion.CombustionChambers.GTCombustionChamber GTCombustionChamber2(Cfg(P(fixed = true, start = 14.1e5)), kcham = kcham1) annotation(
     Placement(transformation(extent = {{-67, -68}, {67, 64}}, rotation = 0)));
   WaterSteam.BoundaryConditions.SourcePQ sourcePQ2(Q0 = 0, P0 = 15e5, h0 = 300e3) annotation(
     Placement(transformation(extent = {{-112, 48}, {-72, 88}}, rotation = 0)));

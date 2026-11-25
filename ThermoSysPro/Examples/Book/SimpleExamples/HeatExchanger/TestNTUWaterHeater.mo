@@ -1,25 +1,31 @@
 within ThermoSysPro.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestNTUWaterHeater
+  parameter Real KCond1(fixed = false, start = 5024)
+    "Condensation heat exchange coefficient computed by initialization";
+  parameter Real KPurge1(fixed = false, start = 1767)
+    "Purge heat exchange coefficient computed by initialization";
+  parameter Real lambdaE1(fixed = false, start = 67.1)
+    "Water-side heat exchange coefficient computed by initialization";
   ThermoSysPro.WaterSteam.BoundaryConditions.SourcePQ Water_inlet1(Q0 = 1788.90, h0 = 760.83e3, P0 = 8270000) annotation(
     Placement(transformation(extent = {{-174, -16}, {-154, 4}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.Sink Puit_condenseur2 annotation(
     Placement(transformation(extent = {{137, -16}, {157, 4}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP Steam_inlet1(option_temperature = 2, mode = 0, P0 = 17.49e5, h0 = 2432.50e3) annotation(
     Placement(transformation(extent = {{-174, 84}, {-154, 104}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss6(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss6(K = 1e-4, h(start = 760830), C2(Q(start = 1788.9), P(start = 8270000), h_vol(start = 760830), h(start = 760830))) annotation(
     Placement(transformation(extent = {{-111, -16}, {-91, 4}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss7(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss7(K = 1e-4, Q(start = 118), h(start = 2432500)) annotation(
     Placement(transformation(extent = {{-110, 84}, {-90, 104}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.Sink Puit_condenseur3 annotation(
     Placement(transformation(extent = {{136, -75}, {156, -55}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss8(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss8(K = 1e-4, h(start = 872080), C1(Q(start = 1788.9), P(start = 8019000), h_vol(start = 872080), h(start = 872080))) annotation(
     Placement(transformation(extent = {{75, -16}, {95, 4}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss9(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss9(K = 1e-4, h(start = 780130), C1(Q(start = 118), P(start = 2779000), h_vol(start = 780130), h(start = 780130))) annotation(
     Placement(transformation(extent = {{75, -75}, {95, -55}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.HeatExchangers.NTUWaterHeating nTUWaterHeating1(HeiF(start = 900000), HDesF(start = 900000), Hep(start = 500000), SCondDes = 5752, Ee(P(start = 82e5), h_vol(start = 760000), Q(start = 1790), h(start = 780000)), Ep(Q(start = 118)), Ev(P(start = 27.22e5), h_vol(start = 2430000)), KCond(fixed = false) = 5024, KPurge(fixed = false) = 1767, Sp(h_vol(start = 780.13e3), h(fixed = true, start = 780.13e3)), lambdaE(fixed = false) = 67.1, SPurge = 1458, Se(h(fixed = true, start = 872.08e3), P(start = 80.19e5, fixed = true))) annotation(
+  ThermoSysPro.WaterSteam.HeatExchangers.NTUWaterHeating nTUWaterHeating1(HeiF(start = 878165.8), HDesF(start = 872080), Hep(start = 889890), SCondDes = 5752, P(start = 1749000), h(start = 780130), SDes(start = 1e-9), Ee(P(start = 8270000), h_vol(start = 760830), Q(start = 1788.9), h(start = 760830)), Ep(P(start = 2779000), Q(start = 118), h(start = 889890), h_vol(start = 780130)), Ev(P(start = 1749000), Q(start = 118), h(start = 2432500), h_vol(start = 780130)), KCond = KCond1, KPurge = KPurge1, Sp(Q(start = 118), h_vol(start = 780.13e3), h(fixed = true, start = 780.13e3)), lambdaE = lambdaE1, SPurge = 1458, Se(P(start = 80.19e5, fixed = true), Q(start = 1788.9), h_vol(start = 872.08e3), h(fixed = true, start = 872.08e3))) annotation(
     Placement(transformation(extent = {{-66, -77}, {50, 65}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss10(K = 1e-4) annotation(
+  ThermoSysPro.WaterSteam.PressureLosses.SingularPressureLoss singularPressureLoss10(K = 1e-4, Q(start = 118), h(start = 889890), C2(Q(start = 118), P(start = 2779000), h_vol(start = 889890), h(start = 889890))) annotation(
     Placement(transformation(extent = {{-110, 35}, {-90, 55}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourcePQ Drain_inlet1(P0 = 27.79e5, Q0 = 118.02, h0 = 889.89e3) annotation(
     Placement(transformation(extent = {{-174, 35}, {-154, 55}}, rotation = 0)));

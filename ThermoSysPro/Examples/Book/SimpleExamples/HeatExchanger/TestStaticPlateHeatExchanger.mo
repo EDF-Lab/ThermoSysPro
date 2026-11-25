@@ -1,13 +1,15 @@
 within ThermoSysPro.Examples.Book.SimpleExamples.HeatExchanger;
 
 model TestStaticPlateHeatExchanger
-  WaterSteam.HeatExchangers.StaticWaterWaterExchanger echangeurAPlaques1(modec = 1, modef = 1, Sp = 2, Sc(Q(fixed = true, start = 1036.78))) annotation(
+  parameter Units.SI.AbsolutePressure puitsP2P0(fixed = false, start = 100000)
+    "Hot side outlet pressure computed by initialization";
+  WaterSteam.HeatExchangers.StaticWaterWaterExchanger echangeurAPlaques1(modec = 1, modef = 1, Sp = 2, Sc(Q(fixed = true, start = 1036.77507878))) annotation(
     Placement(transformation(extent = {{-10, 30}, {10, 50}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP2(T0 = 340) annotation(
     Placement(transformation(extent = {{-70, 30}, {-50, 50}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SourceP sourceP3 annotation(
     Placement(transformation(extent = {{-50, 10}, {-30, 30}}, rotation = 0)));
-  ThermoSysPro.WaterSteam.BoundaryConditions.SinkP puitsP2(P0(fixed = false) = 100000) annotation(
+  ThermoSysPro.WaterSteam.BoundaryConditions.SinkP puitsP2(P0 = puitsP2P0) annotation(
     Placement(transformation(extent = {{50, 30}, {70, 50}}, rotation = 0)));
   ThermoSysPro.WaterSteam.BoundaryConditions.SinkP puitsP3 annotation(
     Placement(transformation(extent = {{30, 10}, {50, 30}}, rotation = 0)));
